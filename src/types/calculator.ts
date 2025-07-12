@@ -17,6 +17,11 @@ export interface CalculatorParams {
         frequency: number; // Frequenza (anni)
         isPercentage: boolean;
     };
+    etfReinvestment: {
+        enabled: boolean; // Se reinvestire la detrazione totale in ETF
+        annualReturn: number; // Rendimento annuale ETF (%)
+        taxRate: number; // Tassazione ETF (%)
+    };
 }
 
 export interface YearlyResult {
@@ -42,6 +47,11 @@ export interface YearlyResult {
     tfrGrossValue: number; // Gross value of TFR in company (revalued annually with 1.5% + 75% of inflation)
     tfrNetValue: number; // Net value of TFR after applying taxation
     tfrNetRealValue: number; // Net value of TFR adjusted for inflation
+    // ETF reinvestment fields
+    etfInvestment: number; // Annual ETF investment (equals totalFiscalRelaxation if enabled)
+    etfAccumulatedValue: number; // ETF accumulated value (gross)
+    etfNetAccumulatedValue: number; // ETF accumulated value after taxation
+    etfNetRealValue: number; // ETF net value adjusted for inflation
 }
 
 export interface CalculationResult {
@@ -54,4 +64,10 @@ export interface CalculationResult {
     totalReturn: number;
     annualizedReturn: number;
     netAnnualizedReturn: number; // After-tax annualized return
+    // ETF reinvestment summary
+    totalEtfInvestment: number; // Total amount invested in ETF
+    finalEtfValue: number; // Final ETF value (gross)
+    netFinalEtfValue: number; // Final ETF value after taxation
+    netRealFinalEtfValue: number; // Final ETF value after taxation and inflation
+    etfAnnualizedReturn: number; // ETF annualized return (net)
 }

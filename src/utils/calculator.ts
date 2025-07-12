@@ -23,6 +23,25 @@ function calculatePensionFundMonthlyCompound(
     return accumulated;
 }
 
+// Function to calculate monthly compound interest for ETF (similar to pension fund)
+function calculateETFMonthlyCompound(
+    currentAccumulated: number,
+    yearlyContribution: number,
+    annualRate: number
+): number {
+    const monthlyRate = annualRate / 100 / 12;
+    const monthlyContribution = yearlyContribution / 12;
+
+    let accumulated = currentAccumulated;
+
+    // Calculate month by month
+    for (let month = 0; month < 12; month++) {
+        accumulated = accumulated * (1 + monthlyRate) + monthlyContribution;
+    }
+
+    return accumulated;
+}
+
 // Function to calculate fiscal relaxation based on income brackets
 function calculateFiscalRelaxation(
     amount: number,
@@ -148,6 +167,7 @@ export function calculatePensionFund(
     let currentInvestment = params.investment;
     let cumulativeFiscalRelaxation = 0;
     let tfrGrossAccumulated = 0; // Track accumulated TFR gross value
+    let etfAccumulatedValue = 0; // Track accumulated ETF value
 
     for (let year = 1; year <= params.duration; year++) {
         // Apply income increase
@@ -267,6 +287,31 @@ export function calculatePensionFund(
         const netRealValue =
             netAccumulatedValue / Math.pow(1 + params.inflation / 100, year);
 
+        // ETF reinvestment calculations
+        const etfInvestment = params.etfReinvestment.enabled
+            ? totalFiscalRelaxation
+            : 0;
+
+        if (params.etfReinvestment.enabled) {
+            // ETF calculation with monthly compound interest (similar to pension fund):
+            etfAccumulatedValue = calculateETFMonthlyCompound(
+                etfAccumulatedValue,
+                etfInvestment,
+                params.etfReinvestment.annualReturn
+            );
+        }
+
+        // Calculate ETF net values (after taxation)
+        const etfNetAccumulatedValue = params.etfReinvestment.enabled
+            ? etfAccumulatedValue * (1 - params.etfReinvestment.taxRate / 100)
+            : 0;
+
+        // Calculate ETF net real value (adjusted for inflation)
+        const etfNetRealValue = params.etfReinvestment.enabled
+            ? etfNetAccumulatedValue /
+              Math.pow(1 + params.inflation / 100, year)
+            : 0;
+
         yearlyResults.push({
             year,
             income: currentIncome,
@@ -287,6 +332,12 @@ export function calculatePensionFund(
             tfrGrossValue: tfrGrossAccumulated,
             tfrNetValue,
             tfrNetRealValue,
+            etfInvestment,
+            etfAccumulatedValue: params.etfReinvestment.enabled
+                ? etfAccumulatedValue
+                : 0,
+            etfNetAccumulatedValue,
+            etfNetRealValue,
         });
     }
 
@@ -310,6 +361,28 @@ export function calculatePensionFund(
         1 / params.duration - 1
     );
 
+    // ETF summary calculations
+    const totalEtfInvestment = params.etfReinvestment.enabled
+        ? yearlyResults.reduce((sum, result) => sum + result.etfInvestment, 0)
+        : 0;
+    const finalEtfValue = params.etfReinvestment.enabled
+        ? etfAccumulatedValue
+        : 0;
+    const netFinalEtfValue = params.etfReinvestment.enabled
+        ? finalEtfValue * (1 - params.etfReinvestment.taxRate / 100)
+        : 0;
+    const netRealFinalEtfValue = params.etfReinvestment.enabled
+        ? netFinalEtfValue /
+          Math.pow(1 + params.inflation / 100, params.duration)
+        : 0;
+    const etfAnnualizedReturn =
+        params.etfReinvestment.enabled && totalEtfInvestment > 0
+            ? Math.pow(
+                  netFinalEtfValue / totalEtfInvestment,
+                  1 / params.duration
+              ) - 1
+            : 0;
+
     return {
         yearlyResults,
         totalContributions,
@@ -320,6 +393,11 @@ export function calculatePensionFund(
         totalReturn,
         annualizedReturn: annualizedReturn * 100,
         netAnnualizedReturn: netAnnualizedReturn * 100,
+        totalEtfInvestment,
+        finalEtfValue,
+        netFinalEtfValue,
+        netRealFinalEtfValue,
+        etfAnnualizedReturn: etfAnnualizedReturn * 100,
     };
 }
 
@@ -352,15 +430,31 @@ export function exportToCSV(results: YearlyResult[]): string {
         "Detrazione Totale",
         "Detrazione Cumulativa",
         "Aliquota Fiscale (%)",
-        "Valore Accumulato (Lordo)",
-        "Valore Accumulato (Netto)",
-        "Valore Reale (Lordo)",
-        "Valore Reale (Netto)",
+        "FP Lordo",
+        "FP Netto",
+        "FP Reale Lordo",
+        "FP Reale Netto",
         "TFR Aliquota Tassazione (%)",
         "TFR Valore Lordo Azienda",
         "TFR Valore Netto Azienda",
         "TFR Valore Netto Reale Azienda",
+        "ETF Lordo",
+        "ETF Netto",
+        "ETF Reale Netto",
+        "ETF Aliquota (%)",
     ];
+
+    // Calculate ETF tax rate from the data (it's consistent across all years)
+    const etfTaxRate = results.find(
+        (r) => r.etfAccumulatedValue > 0 && r.etfNetAccumulatedValue > 0
+    )
+        ? (1 -
+              results.find((r) => r.etfAccumulatedValue > 0)!
+                  .etfNetAccumulatedValue /
+                  results.find((r) => r.etfAccumulatedValue > 0)!
+                      .etfAccumulatedValue) *
+          100
+        : 0;
 
     const csvContent = [
         headers.join(","),
@@ -384,6 +478,10 @@ export function exportToCSV(results: YearlyResult[]): string {
                 result.tfrGrossValue.toFixed(2),
                 result.tfrNetValue.toFixed(2),
                 result.tfrNetRealValue.toFixed(2),
+                result.etfAccumulatedValue.toFixed(2),
+                result.etfNetAccumulatedValue.toFixed(2),
+                result.etfNetRealValue.toFixed(2),
+                result.etfInvestment > 0 ? etfTaxRate.toFixed(1) : "0.0",
             ].join(",")
         ),
     ].join("\n");

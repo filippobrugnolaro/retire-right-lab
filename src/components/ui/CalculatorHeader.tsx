@@ -44,7 +44,7 @@ export function CalculatorHeader({ results, duration }: CalculatorHeaderProps) {
                                 {formatCurrency(results.netFinalValue)}
                             </div>
                             <div className="text-sm opacity-90">
-                                Valore Finale (Netto)
+                                Fondo Finale (Netto)
                             </div>
                         </div>
                         <div>
@@ -52,7 +52,7 @@ export function CalculatorHeader({ results, duration }: CalculatorHeaderProps) {
                                 {formatCurrency(results.netRealFinalValue)}
                             </div>
                             <div className="text-sm opacity-90">
-                                Valore Reale (Netto)
+                                Fondo Reale (Netto)
                             </div>
                         </div>
                         <div>

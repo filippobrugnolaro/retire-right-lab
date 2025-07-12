@@ -12,7 +12,9 @@ interface ParametersInputProps {
         key: K,
         value: CalculatorParams[K]
     ) => void;
-    updateNestedParam: <T extends "incomeIncrease" | "investmentIncrease">(
+    updateNestedParam: <
+        T extends "incomeIncrease" | "investmentIncrease" | "etfReinvestment"
+    >(
         parentKey: T,
         childKey: keyof CalculatorParams[T],
         value: number | boolean
@@ -433,6 +435,95 @@ export function ParametersInput({
                                     colorScheme="purple"
                                 />
                             </div>
+                        </div>
+                    </div>
+
+                    {/* ETF Reinvestment Section */}
+                    <div className="bg-purple-50/30 rounded-lg p-4">
+                        <h4 className="text-md font-bold text-purple-800 mb-4 flex items-center">
+                            📊 Reinvestimento ETF Detrazione
+                        </h4>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-3">
+                                    Reinvesti Detrazione Totale in ETF
+                                    <span
+                                        className="text-purple-600 cursor-help ml-2 hover:text-purple-800 transition-colors"
+                                        title="Reinvesti la detrazione fiscale annuale in ETF"
+                                    >
+                                        ❓
+                                    </span>
+                                </label>
+                                <ToggleButton
+                                    options={[
+                                        {
+                                            value: true,
+                                            label: "✅ Sì, reinvesti in ETF",
+                                        },
+                                        {
+                                            value: false,
+                                            label: "❌ No, non reinvestire",
+                                        },
+                                    ]}
+                                    selectedValue={
+                                        params.etfReinvestment.enabled
+                                    }
+                                    onChange={(value) =>
+                                        updateNestedParam(
+                                            "etfReinvestment",
+                                            "enabled",
+                                            value
+                                        )
+                                    }
+                                    colorScheme="purple"
+                                />
+                            </div>
+
+                            {params.etfReinvestment.enabled && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <InputField
+                                        id="etfAnnualReturn"
+                                        label="Rendimento ETF"
+                                        icon="📈"
+                                        value={
+                                            params.etfReinvestment.annualReturn
+                                        }
+                                        onChange={(value) =>
+                                            updateNestedParam(
+                                                "etfReinvestment",
+                                                "annualReturn",
+                                                value as number
+                                            )
+                                        }
+                                        min={0}
+                                        max={30}
+                                        step={0.1}
+                                        suffix="%"
+                                        helpText="Rendimento annuale previsto dell'ETF"
+                                        colorScheme="purple"
+                                    />
+
+                                    <InputField
+                                        id="etfTaxRate"
+                                        label="Tassazione ETF"
+                                        icon="💰"
+                                        value={params.etfReinvestment.taxRate}
+                                        onChange={(value) =>
+                                            updateNestedParam(
+                                                "etfReinvestment",
+                                                "taxRate",
+                                                value as number
+                                            )
+                                        }
+                                        min={0}
+                                        max={100}
+                                        step={0.1}
+                                        suffix="%"
+                                        helpText="Aliquota di tassazione dell'ETF (es. 26%)"
+                                        colorScheme="purple"
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
