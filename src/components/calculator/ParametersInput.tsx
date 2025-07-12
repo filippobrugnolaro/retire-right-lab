@@ -173,9 +173,15 @@ export function ParametersInput({
                         label="Calcola TFR"
                         icon="📋"
                         value={params.calculateTfr ? "true" : "false"}
-                        onChange={(value) =>
-                            updateParam("calculateTfr", Boolean(value))
-                        }
+                        onChange={(value) => {
+                            const tfrEnabled = Boolean(value);
+                            updateParam("calculateTfr", tfrEnabled);
+                            // Reset employer contribution and member contribution to 0 when TFR is disabled
+                            if (!tfrEnabled) {
+                                updateParam("employerContribution", 0);
+                                updateParam("memberContribution", 0);
+                            }
+                        }}
                         type="select"
                         options={tfrOptions}
                         helpText="Include il TFR (Trattamento di Fine Rapporto) nel calcolo"
@@ -198,8 +204,13 @@ export function ParametersInput({
                             max={100}
                             step={0.1}
                             suffix="%"
-                            helpText="Percentuale di contributo del datore di lavoro"
+                            helpText={
+                                params.calculateTfr
+                                    ? "Percentuale di contributo del datore di lavoro"
+                                    : "Disponibile solo quando il TFR è incluso"
+                            }
                             colorScheme="blue"
+                            disabled={!params.calculateTfr}
                         />
 
                         <InputField
@@ -217,8 +228,13 @@ export function ParametersInput({
                             max={100}
                             step={0.1}
                             suffix="%"
-                            helpText="Percentuale di contribuzione dell'aderente"
+                            helpText={
+                                params.calculateTfr
+                                    ? "Percentuale di contribuzione dell'aderente"
+                                    : "Disponibile solo quando il TFR è incluso"
+                            }
                             colorScheme="blue"
+                            disabled={!params.calculateTfr}
                         />
                     </div>
                 </div>

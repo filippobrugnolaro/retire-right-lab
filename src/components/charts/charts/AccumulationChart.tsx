@@ -53,6 +53,10 @@ export function AccumulationChart({ results }: AccumulationChartProps) {
     const [chartData, setChartData] = useState<ReturnType<
         typeof createAccumulationChartData
     > | null>(null);
+    const [lockedZoomState, setLockedZoomState] = useState<{
+        x: { min: number; max: number } | null;
+        y: { min: number; max: number } | null;
+    }>({ x: null, y: null });
 
     // Ensure component only renders on client side and Chart.js is available
     useEffect(() => {
@@ -67,6 +71,16 @@ export function AccumulationChart({ results }: AccumulationChartProps) {
             }
         }
     }, [results]);
+
+    // Update chart when zoom state changes
+    useEffect(() => {
+        if (chartRef.current && typeof window !== "undefined") {
+            const chart = chartRef.current;
+            if (chart.update) {
+                chart.update("none"); // Update without animation for smoother transition
+            }
+        }
+    }, [isZoomEnabled, lockedZoomState]);
 
     // Don't render on server side or if chart data isn't ready
     if (!isClient || !chartData) {
@@ -90,12 +104,28 @@ export function AccumulationChart({ results }: AccumulationChartProps) {
             const chart = chartRef.current;
             if (chart.resetZoom) {
                 chart.resetZoom();
+                // Clear the locked zoom state when resetting
+                setLockedZoomState({ x: null, y: null });
             }
         }
     };
 
     // Function to toggle zoom mode
     const toggleZoomMode = () => {
+        if (chartRef.current && typeof window !== "undefined") {
+            const chart = chartRef.current;
+
+            if (isZoomEnabled) {
+                // When disabling zoom, capture the current zoom state
+                const scales = chart.scales;
+                if (scales.x && scales.y) {
+                    setLockedZoomState({
+                        x: { min: scales.x.min, max: scales.x.max },
+                        y: { min: scales.y.min, max: scales.y.max },
+                    });
+                }
+            }
+        }
         setIsZoomEnabled(!isZoomEnabled);
     };
 
@@ -151,8 +181,14 @@ export function AccumulationChart({ results }: AccumulationChartProps) {
             y: {
                 beginAtZero: true,
                 type: "linear" as const,
-                min: 0,
-                max: suggestedMax,
+                min:
+                    !isZoomEnabled && lockedZoomState.y
+                        ? lockedZoomState.y.min
+                        : 0,
+                max:
+                    !isZoomEnabled && lockedZoomState.y
+                        ? lockedZoomState.y.max
+                        : suggestedMax,
                 ticks: {
                     stepSize: roundedStepSize, // Calculated step size for 20 ticks
                     maxTicksLimit: 20, // Exactly 20 ticks
@@ -168,6 +204,14 @@ export function AccumulationChart({ results }: AccumulationChartProps) {
                 },
             },
             x: {
+                min:
+                    !isZoomEnabled && lockedZoomState.x
+                        ? lockedZoomState.x.min
+                        : undefined,
+                max:
+                    !isZoomEnabled && lockedZoomState.x
+                        ? lockedZoomState.x.max
+                        : undefined,
                 grid: {
                     display: true,
                     color: "rgba(0, 0, 0, 0.05)",

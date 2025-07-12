@@ -171,16 +171,18 @@ export function calculatePensionFund(
             }
         }
 
-        // Calculate employer contribution
-        const employerContribution =
-            currentIncome * (params.employerContribution / 100);
+        // Calculate employer contribution only if TFR is included
+        const employerContribution = params.calculateTfr
+            ? currentIncome * (params.employerContribution / 100)
+            : 0;
 
         // Calculate TFR (Trattamento di Fine Rapporto)
         const tfr = params.calculateTfr ? currentIncome * 0.0741 : 0;
 
-        // Calculate member contribution
-        const memberContribution =
-            currentIncome * (params.memberContribution / 100);
+        // Calculate member contribution only if TFR is included
+        const memberContribution = params.calculateTfr
+            ? currentIncome * (params.memberContribution / 100)
+            : 0;
 
         // Apply maximum limit for fiscal relaxation eligibility
         // The sum of investment + member contribution cannot exceed €5,164.57 for tax deduction purposes

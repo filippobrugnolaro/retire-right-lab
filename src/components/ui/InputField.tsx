@@ -16,6 +16,7 @@ interface InputFieldProps {
     options?: { value: string | boolean; label: string }[];
     colorScheme?: "blue" | "green" | "purple";
     className?: string;
+    disabled?: boolean;
 }
 
 export function InputField({
@@ -33,6 +34,7 @@ export function InputField({
     options,
     colorScheme = "blue",
     className = "",
+    disabled = false,
 }: InputFieldProps) {
     const colorClasses = {
         blue: "focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400",
@@ -78,7 +80,12 @@ export function InputField({
                                     : val
                             );
                         }}
-                        className={`w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 text-black font-semibold text-lg transition-all duration-200 ${colorClasses[colorScheme]}`}
+                        disabled={disabled}
+                        className={`w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 text-black font-semibold text-lg transition-all duration-200 ${
+                            disabled 
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                                : colorClasses[colorScheme]
+                        }`}
                     >
                         {options.map((option) => (
                             <option
@@ -101,14 +108,21 @@ export function InputField({
                                     : e.target.value
                             )
                         }
-                        className={`w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 text-black font-semibold text-lg transition-all duration-200 ${colorClasses[colorScheme]}`}
+                        disabled={disabled}
+                        className={`w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 text-black font-semibold text-lg transition-all duration-200 ${
+                            disabled 
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                                : colorClasses[colorScheme]
+                        }`}
                         min={min}
                         max={max}
                         step={step}
                     />
                 )}
                 {suffix && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm font-medium">
+                    <div className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-medium ${
+                        disabled ? "text-gray-300" : "text-gray-400"
+                    }`}>
                         {suffix}
                     </div>
                 )}
