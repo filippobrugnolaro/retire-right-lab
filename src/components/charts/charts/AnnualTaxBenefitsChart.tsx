@@ -1,14 +1,14 @@
-// Contributions breakdown chart component
+// Annual tax benefits chart component
 "use client";
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { CalculationResult } from "@/types/calculator";
-import { createContributionsChartData } from "../utils/chartDataTransformers";
-import { createStackedBarOptions } from "../config/chartOptions";
+import { createAnnualTaxBenefitsChartData } from "../utils/chartDataTransformers";
+import { createBaseChartOptions } from "../config/chartOptions";
 
-// Dynamically import the Bar component to avoid SSR issues
-const BarChart = dynamic(
+// Dynamically import the Line component to avoid SSR issues
+const LineChart = dynamic(
     async () => {
         // Import and register Chart.js components
         const chartjs = await import("chart.js");
@@ -18,41 +18,45 @@ const BarChart = dynamic(
         chartjs.Chart.register(
             chartjs.CategoryScale,
             chartjs.LinearScale,
-            chartjs.BarElement,
+            chartjs.PointElement,
+            chartjs.LineElement,
             chartjs.Title,
             chartjs.Tooltip,
-            chartjs.Legend
+            chartjs.Legend,
+            chartjs.Filler
         );
 
-        return { default: reactChartjs.Bar };
+        return { default: reactChartjs.Line };
     },
     {
         ssr: false,
         loading: () => (
-            <div className="h-80 flex items-center justify-center">
+            <div className="h-64 flex items-center justify-center">
                 <div className="text-gray-500">Caricamento grafico...</div>
             </div>
         ),
     }
 );
 
-interface ContributionsChartProps {
+interface AnnualTaxBenefitsChartProps {
     results: CalculationResult;
 }
 
-export function ContributionsChart({ results }: ContributionsChartProps) {
+export function AnnualTaxBenefitsChart({
+    results,
+}: AnnualTaxBenefitsChartProps) {
     const [chartData, setChartData] = useState<ReturnType<
-        typeof createContributionsChartData
+        typeof createAnnualTaxBenefitsChartData
     > | null>(null);
     const [chartOptions, setChartOptions] = useState<ReturnType<
-        typeof createStackedBarOptions
+        typeof createBaseChartOptions
     > | null>(null);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
             try {
-                setChartData(createContributionsChartData(results));
-                setChartOptions(createStackedBarOptions());
+                setChartData(createAnnualTaxBenefitsChartData(results));
+                setChartOptions(createBaseChartOptions());
             } catch (error) {
                 console.error("Error creating chart data:", error);
             }
@@ -62,10 +66,10 @@ export function ContributionsChart({ results }: ContributionsChartProps) {
     if (!chartData || !chartOptions) {
         return (
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200">
-                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                    🏗️ Composizione Contributi Annuali
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    💰 Detrazioni Annuali
                 </h3>
-                <div className="h-80 flex items-center justify-center">
+                <div className="h-64 flex items-center justify-center">
                     <div className="text-gray-500">Caricamento grafico...</div>
                 </div>
             </div>
@@ -74,15 +78,14 @@ export function ContributionsChart({ results }: ContributionsChartProps) {
 
     return (
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200">
-            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                🏗️ Composizione Contributi Annuali
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                📅 Detrazioni Annuali
             </h3>
-            <div className="h-80">
-                <BarChart data={chartData} options={chartOptions} />
+            <div className="h-64">
+                <LineChart data={chartData} options={chartOptions} />
             </div>
             <p className="text-sm text-gray-600 mt-4">
-                Dettaglio di tutti i contributi che alimentano il tuo fondo
-                pensione ogni anno
+                Risparmio fiscale annuale grazie alle detrazioni sui contributi
             </p>
         </div>
     );

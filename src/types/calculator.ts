@@ -37,6 +37,11 @@ export interface YearlyResult {
     investmentFiscalRelaxation: number; // Tax savings from investment only
     totalFiscalRelaxation: number; // Total annual tax savings (same as investment)
     cumulativeFiscalRelaxation: number; // Cumulative tax savings
+    // TFR company fields
+    tfrTaxationRate: number; // Mean taxation percentage for TFR based on last 5 years
+    tfrGrossValue: number; // Gross value of TFR in company (revalued annually with 1.5% + 75% of inflation)
+    tfrNetValue: number; // Net value of TFR after applying taxation
+    tfrNetRealValue: number; // Net value of TFR adjusted for inflation
 }
 
 export interface CalculationResult {

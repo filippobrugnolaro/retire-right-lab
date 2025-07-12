@@ -4,6 +4,25 @@ import {
     YearlyResult,
 } from "@/types/calculator";
 
+// Function to calculate monthly compound interest for pension fund
+function calculatePensionFundMonthlyCompound(
+    currentAccumulated: number,
+    yearlyContribution: number,
+    annualRate: number
+): number {
+    const monthlyRate = annualRate / 100 / 12;
+    const monthlyContribution = yearlyContribution / 12;
+
+    let accumulated = currentAccumulated;
+
+    // Calculate month by month
+    for (let month = 0; month < 12; month++) {
+        accumulated = accumulated * (1 + monthlyRate) + monthlyContribution;
+    }
+
+    return accumulated;
+}
+
 // Function to calculate fiscal relaxation based on income brackets
 function calculateFiscalRelaxation(
     amount: number,
@@ -52,6 +71,73 @@ function calculateFiscalRelaxation(
     return relaxation;
 }
 
+// Function to calculate TFR taxation rate based on proportional taxation of current and previous years
+function calculateTfrTaxationRate(
+    yearlyResults: YearlyResult[],
+    currentYear: number,
+    currentIncome: number
+): number {
+    let totalProportionalTaxation = 0;
+    const yearsToConsider = Math.min(currentYear, 5); // Consider at most the last 5 years including current year
+
+    // Calculate proportional taxation for current year
+    let currentYearProportionalTaxation = 0;
+    if (currentIncome <= 28000) {
+        currentYearProportionalTaxation = 23;
+    } else if (currentIncome <= 50000) {
+        const bracket1Amount = 28000;
+        const bracket2Amount = currentIncome - 28000;
+        currentYearProportionalTaxation =
+            (bracket1Amount / currentIncome) * 23 +
+            (bracket2Amount / currentIncome) * 35;
+    } else {
+        const bracket1Amount = 28000;
+        const bracket2Amount = 22000; // 50k - 28k
+        const bracket3Amount = currentIncome - 50000;
+        currentYearProportionalTaxation =
+            (bracket1Amount / currentIncome) * 23 +
+            (bracket2Amount / currentIncome) * 35 +
+            (bracket3Amount / currentIncome) * 43;
+    }
+
+    totalProportionalTaxation += currentYearProportionalTaxation;
+
+    // Add proportional taxation from previous years (up to 4 previous years for a total of 5)
+    const previousYearsToConsider = Math.min(currentYear - 1, 4);
+    for (let i = 0; i < previousYearsToConsider; i++) {
+        const yearIndex = currentYear - 2 - i; // Index in yearlyResults array (0-based)
+        if (yearIndex >= 0) {
+            const yearData = yearlyResults[yearIndex];
+            const income = yearData.income;
+
+            let proportionalTaxation = 0;
+
+            // Calculate proportional taxation based on income brackets
+            if (income <= 28000) {
+                proportionalTaxation = 23;
+            } else if (income <= 50000) {
+                const bracket1Amount = 28000;
+                const bracket2Amount = income - 28000;
+                proportionalTaxation =
+                    (bracket1Amount / income) * 23 +
+                    (bracket2Amount / income) * 35;
+            } else {
+                const bracket1Amount = 28000;
+                const bracket2Amount = 22000; // 50k - 28k
+                const bracket3Amount = income - 50000;
+                proportionalTaxation =
+                    (bracket1Amount / income) * 23 +
+                    (bracket2Amount / income) * 35 +
+                    (bracket3Amount / income) * 43;
+            }
+
+            totalProportionalTaxation += proportionalTaxation;
+        }
+    }
+
+    return totalProportionalTaxation / yearsToConsider;
+}
+
 export function calculatePensionFund(
     params: CalculatorParams
 ): CalculationResult {
@@ -61,6 +147,7 @@ export function calculatePensionFund(
     let currentIncome = params.annualIncome;
     let currentInvestment = params.investment;
     let cumulativeFiscalRelaxation = 0;
+    let tfrGrossAccumulated = 0; // Track accumulated TFR gross value
 
     for (let year = 1; year <= params.duration; year++) {
         // Apply income increase
@@ -126,6 +213,27 @@ export function calculatePensionFund(
         const totalFiscalRelaxation = investmentFiscalRelaxation;
         cumulativeFiscalRelaxation += totalFiscalRelaxation;
 
+        // Calculate TFR taxation rate (mean of current and previous years proportional taxation)
+        const tfrTaxationRate = calculateTfrTaxationRate(
+            yearlyResults,
+            year,
+            currentIncome
+        );
+
+        // Calculate TFR gross value in company with yearly revaluation (1.5% + 75% of inflation)
+        const tfrRevaluationRate = 1.5 + 0.75 * params.inflation;
+        // Apply yearly revaluation to previous accumulated amount, then add current year TFR with its revaluation
+        tfrGrossAccumulated =
+            tfrGrossAccumulated * (1 + tfrRevaluationRate / 100) +
+            tfr * (1 + tfrRevaluationRate / 100);
+
+        // Calculate TFR net value (applying taxation)
+        const tfrNetValue = tfrGrossAccumulated * (1 - tfrTaxationRate / 100);
+
+        // Calculate TFR net real value (adjusted for inflation)
+        const tfrNetRealValue =
+            tfrNetValue / Math.pow(1 + params.inflation / 100, year);
+
         // Total yearly contributions
         const totalYearlyContributions =
             currentInvestment + employerContribution + tfr + memberContribution;
@@ -140,10 +248,12 @@ export function calculatePensionFund(
 
         const taxRate = calculateTaxRate(year);
 
-        // Calculate gross accumulated value (before taxes)
-        accumulatedValue =
-            accumulatedValue * (1 + params.pensionFundReturn / 100) +
-            totalYearlyContributions;
+        // Calculate gross accumulated value with monthly compounding
+        accumulatedValue = calculatePensionFundMonthlyCompound(
+            accumulatedValue,
+            totalYearlyContributions,
+            params.pensionFundReturn
+        );
 
         // Calculate net accumulated value (after taxes applied to total value)
         // Tax is applied to the entire accumulated value at withdrawal
@@ -171,6 +281,10 @@ export function calculatePensionFund(
             investmentFiscalRelaxation,
             totalFiscalRelaxation,
             cumulativeFiscalRelaxation,
+            tfrTaxationRate,
+            tfrGrossValue: tfrGrossAccumulated,
+            tfrNetValue,
+            tfrNetRealValue,
         });
     }
 
@@ -240,6 +354,10 @@ export function exportToCSV(results: YearlyResult[]): string {
         "Valore Accumulato (Netto)",
         "Valore Reale (Lordo)",
         "Valore Reale (Netto)",
+        "TFR Aliquota Tassazione (%)",
+        "TFR Valore Lordo Azienda",
+        "TFR Valore Netto Azienda",
+        "TFR Valore Netto Reale Azienda",
     ];
 
     const csvContent = [
@@ -260,6 +378,10 @@ export function exportToCSV(results: YearlyResult[]): string {
                 result.netAccumulatedValue.toFixed(2),
                 result.realValue.toFixed(2),
                 result.netRealValue.toFixed(2),
+                result.tfrTaxationRate.toFixed(1),
+                result.tfrGrossValue.toFixed(2),
+                result.tfrNetValue.toFixed(2),
+                result.tfrNetRealValue.toFixed(2),
             ].join(",")
         ),
     ].join("\n");

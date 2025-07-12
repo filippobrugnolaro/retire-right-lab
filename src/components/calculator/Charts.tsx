@@ -33,10 +33,9 @@ ChartJS.register(
 
 interface ChartsProps {
     results: CalculationResult;
-    duration: number;
 }
 
-export function Charts({ results, duration }: ChartsProps) {
+export function Charts({ results }: ChartsProps) {
     const years = results.yearlyResults.map((r) => `Anno ${r.year}`);
 
     // Chart 1: Accumulated Value Growth Over Time
@@ -148,50 +147,6 @@ export function Charts({ results, duration }: ChartsProps) {
         ],
     };
 
-    // Chart 4: Monthly Pension Projection
-    const monthlyPensionData = {
-        labels: [
-            "Anno 10",
-            "Anno 15",
-            "Anno 20",
-            "Anno 25",
-            "Anno 30",
-            `Anno ${duration}`,
-        ],
-        datasets: [
-            {
-                label: "Rendita Mensile Stimata",
-                data: [10, 15, 20, 25, 30, duration].map((year) => {
-                    const yearIndex = Math.min(
-                        year - 1,
-                        results.yearlyResults.length - 1
-                    );
-                    const yearResult = results.yearlyResults[yearIndex];
-                    return yearResult
-                        ? yearResult.netAccumulatedValue / year / 12
-                        : 0;
-                }),
-                backgroundColor: [
-                    "rgba(59, 130, 246, 0.8)",
-                    "rgba(34, 197, 94, 0.8)",
-                    "rgba(168, 85, 247, 0.8)",
-                    "rgba(249, 115, 22, 0.8)",
-                    "rgba(236, 72, 153, 0.8)",
-                    "rgba(14, 165, 233, 0.8)",
-                ],
-                borderColor: [
-                    "rgb(59, 130, 246)",
-                    "rgb(34, 197, 94)",
-                    "rgb(168, 85, 247)",
-                    "rgb(249, 115, 22)",
-                    "rgb(236, 72, 153)",
-                    "rgb(14, 165, 233)",
-                ],
-                borderWidth: 2,
-            },
-        ],
-    };
-
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -218,11 +173,19 @@ export function Charts({ results, duration }: ChartsProps) {
         scales: {
             y: {
                 beginAtZero: true,
+                type: "linear" as const,
                 ticks: {
+                    stepSize: 5000, // €5,000 increments
+                    maxTicksLimit: 25, // Allow more ticks
+                    precision: 0, // No decimal places
                     callback: function (value: string | number) {
                         return formatCurrency(Number(value));
                     },
                 },
+                grid: {
+                    display: true,
+                },
+                min: 0, // Explicitly set minimum
             },
         },
         interaction: {
@@ -252,7 +215,7 @@ export function Charts({ results, duration }: ChartsProps) {
                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                     📈 Crescita del Capitale nel Tempo
                 </h3>
-                <div className="h-80">
+                <div className="h-96">
                     <Line data={accumulationData} options={chartOptions} />
                 </div>
                 <p className="text-sm text-gray-600 mt-4">
@@ -287,20 +250,6 @@ export function Charts({ results, duration }: ChartsProps) {
                     <p className="text-sm text-gray-600 mt-4">
                         Risparmio fiscale annuale e cumulativo grazie alle
                         detrazioni
-                    </p>
-                </div>
-
-                {/* Monthly Pension Projection */}
-                <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                        💳 Proiezione Rendita Mensile
-                    </h3>
-                    <div className="h-64">
-                        <Bar data={monthlyPensionData} options={chartOptions} />
-                    </div>
-                    <p className="text-sm text-gray-600 mt-4">
-                        Stima della rendita mensile basata sull&apos;accumulo a
-                        diversi traguardi temporali
                     </p>
                 </div>
             </div>

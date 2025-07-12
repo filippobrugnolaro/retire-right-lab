@@ -14,7 +14,7 @@ export function CalculatorHeader({ results, duration }: CalculatorHeaderProps) {
         <>
             {/* Header */}
             <header className="bg-white/80 backdrop-blur-md shadow-lg border-b border-blue-100 sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 py-6">
+                <div className="w-full px-2 sm:px-4 lg:px-6 py-6">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
@@ -37,7 +37,7 @@ export function CalculatorHeader({ results, duration }: CalculatorHeaderProps) {
 
             {/* Quick Summary Banner */}
             <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white py-4">
-                <div className="max-w-7xl mx-auto px-4">
+                <div className="w-full px-2 sm:px-4 lg:px-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                         <div>
                             <div className="text-2xl font-bold">

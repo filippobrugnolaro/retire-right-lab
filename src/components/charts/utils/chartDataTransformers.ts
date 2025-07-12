@@ -91,7 +91,9 @@ export const createContributionsChartData = (results: CalculationResult) => {
     };
 };
 
-export const createTaxBenefitsChartData = (results: CalculationResult) => {
+export const createAnnualTaxBenefitsChartData = (
+    results: CalculationResult
+) => {
     const years = results.yearlyResults.map((r) => `Anno ${r.year}`);
 
     return {
@@ -105,6 +107,18 @@ export const createTaxBenefitsChartData = (results: CalculationResult) => {
                 fill: true,
                 tension: CHART_STYLES.tension,
             },
+        ],
+    };
+};
+
+export const createCumulativeTaxBenefitsChartData = (
+    results: CalculationResult
+) => {
+    const years = results.yearlyResults.map((r) => `Anno ${r.year}`);
+
+    return {
+        labels: years,
+        datasets: [
             {
                 label: "Detrazione Cumulativa",
                 data: results.yearlyResults.map(
@@ -114,54 +128,6 @@ export const createTaxBenefitsChartData = (results: CalculationResult) => {
                 backgroundColor: CHART_COLORS.background.blue,
                 fill: true,
                 tension: CHART_STYLES.tension,
-            },
-        ],
-    };
-};
-
-export const createMonthlyPensionChartData = (
-    results: CalculationResult,
-    duration: number
-) => {
-    return {
-        labels: [
-            "Anno 10",
-            "Anno 15",
-            "Anno 20",
-            "Anno 25",
-            "Anno 30",
-            `Anno ${duration}`,
-        ],
-        datasets: [
-            {
-                label: "Rendita Mensile Stimata",
-                data: [10, 15, 20, 25, 30, duration].map((year) => {
-                    const yearIndex = Math.min(
-                        year - 1,
-                        results.yearlyResults.length - 1
-                    );
-                    const yearResult = results.yearlyResults[yearIndex];
-                    return yearResult
-                        ? yearResult.netAccumulatedValue / year / 12
-                        : 0;
-                }),
-                backgroundColor: [
-                    CHART_COLORS.solid.blue,
-                    CHART_COLORS.solid.green,
-                    CHART_COLORS.solid.purple,
-                    CHART_COLORS.solid.orange,
-                    CHART_COLORS.solid.pink,
-                    CHART_COLORS.solid.cyan,
-                ],
-                borderColor: [
-                    CHART_COLORS.primary.blue,
-                    CHART_COLORS.primary.green,
-                    CHART_COLORS.primary.purple,
-                    CHART_COLORS.primary.orange,
-                    CHART_COLORS.primary.pink,
-                    CHART_COLORS.primary.cyan,
-                ],
-                borderWidth: 2,
             },
         ],
     };
