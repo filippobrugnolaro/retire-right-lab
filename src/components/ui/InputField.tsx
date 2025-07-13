@@ -84,8 +84,8 @@ export function InputField({
                         }}
                         disabled={disabled}
                         className={`w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 text-black font-semibold text-lg transition-all duration-200 ${
-                            disabled 
-                                ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                            disabled
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                                 : colorClasses[colorScheme]
                         }`}
                     >
@@ -112,8 +112,8 @@ export function InputField({
                         }
                         disabled={disabled}
                         className={`w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 text-black font-semibold text-lg transition-all duration-200 ${
-                            disabled 
-                                ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                            disabled
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                                 : colorClasses[colorScheme]
                         }`}
                         min={min}
@@ -122,9 +122,11 @@ export function InputField({
                     />
                 )}
                 {suffix && (
-                    <div className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-medium ${
-                        disabled ? "text-gray-300" : "text-gray-400"
-                    }`}>
+                    <div
+                        className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-medium ${
+                            disabled ? "text-gray-300" : "text-gray-400"
+                        }`}
+                    >
                         {suffix}
                     </div>
                 )}

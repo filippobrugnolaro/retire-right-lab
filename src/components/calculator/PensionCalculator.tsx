@@ -64,7 +64,11 @@ export default function PensionCalculator() {
     };
 
     const updateNestedParam = <
-        T extends "incomeIncrease" | "investmentIncrease" | "etfReinvestment" | "personalInvestment"
+        T extends
+            | "incomeIncrease"
+            | "investmentIncrease"
+            | "etfReinvestment"
+            | "personalInvestment"
     >(
         parentKey: T,
         childKey: keyof CalculatorParams[T],

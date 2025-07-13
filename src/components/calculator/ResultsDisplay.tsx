@@ -355,21 +355,27 @@ export function ResultsDisplay({
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                         <SummaryCard
                             title="Investimento Totale"
-                            value={formatCurrency(results.totalPersonalInvestment)}
+                            value={formatCurrency(
+                                results.totalPersonalInvestment
+                            )}
                             description="Totale contributi personali investiti (dopo IRPEF)"
                             icon="💵"
                             colorScheme="orange"
                         />
                         <SummaryCard
                             title="Investimento Finale (Netto)"
-                            value={formatCurrency(results.netFinalPersonalValue)}
+                            value={formatCurrency(
+                                results.netFinalPersonalValue
+                            )}
                             description="Valore dopo tassazione finale"
                             icon="💎"
                             colorScheme="green"
                         />
                         <SummaryCard
                             title="Investimento Reale (Netto)"
-                            value={formatCurrency(results.netRealFinalPersonalValue)}
+                            value={formatCurrency(
+                                results.netRealFinalPersonalValue
+                            )}
                             description="Potere d'acquisto netto"
                             icon="🏆"
                             colorScheme="orange"
@@ -388,7 +394,8 @@ export function ResultsDisplay({
                     {/* Combined Total: TFR + Personal Investment */}
                     <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-white/20">
                         <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">
-                            🎯 Totale Combinato (TFR azienda + Investimento Contributi Personali)
+                            🎯 Totale Combinato (TFR azienda + Investimento
+                            Contributi Personali)
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="text-center">
@@ -418,7 +425,10 @@ export function ResultsDisplay({
                                     vs Solo TFR
                                 </p>
                                 <p className="text-xl font-bold text-green-600">
-                                    +{formatCurrency(results.netFinalPersonalValue)}
+                                    +
+                                    {formatCurrency(
+                                        results.netFinalPersonalValue
+                                    )}
                                 </p>
                             </div>
                         </div>
@@ -1185,7 +1195,8 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                         Aliquota IRPEF (%)
                                     </th>
                                     <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-orange-400">
-                                        Totale Investimento Personale (dopo IRPEF)
+                                        Totale Investimento Personale (dopo
+                                        IRPEF)
                                     </th>
                                     <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-orange-400">
                                         Valore Netto
@@ -1213,19 +1224,24 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                         </td>
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100 text-center">
                                             {formatCurrency(
-                                                result.memberContribution + result.investment
+                                                result.memberContribution +
+                                                    result.investment
                                             )}
                                         </td>
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-red-700 border-r border-gray-100 text-center font-semibold">
-                                            {result.personalIrpefRate > 0 
-                                                ? `${result.personalIrpefRate.toFixed(1)}%`
+                                            {result.personalIrpefRate > 0
+                                                ? `${result.personalIrpefRate.toFixed(
+                                                      1
+                                                  )}%`
                                                 : "-"}
                                         </td>
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100 text-center">
                                             {formatCurrency(
-                                                result.personalContributionsAfterIrpef > 0 
-                                                    ? result.personalContributionsAfterIrpef 
-                                                    : result.memberContribution + result.investment
+                                                result.personalContributionsAfterIrpef >
+                                                    0
+                                                    ? result.personalContributionsAfterIrpef
+                                                    : result.memberContribution +
+                                                          result.investment
                                             )}
                                         </td>
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-emerald-700 border-r border-gray-100 text-center font-semibold">
@@ -1240,7 +1256,9 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                         </td>
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-red-700 text-center">
                                             {result.personalTaxRate > 0
-                                                ? `${result.personalTaxRate.toFixed(1)}%`
+                                                ? `${result.personalTaxRate.toFixed(
+                                                      1
+                                                  )}%`
                                                 : "-"}
                                         </td>
                                     </tr>
@@ -1252,23 +1270,59 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                     </td>
                                     <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
                                         {formatCurrency(
-                                            results.reduce((sum, result) => sum + result.memberContribution + result.investment, 0)
+                                            results.reduce(
+                                                (sum, result) =>
+                                                    sum +
+                                                    result.memberContribution +
+                                                    result.investment,
+                                                0
+                                            )
                                         )}
                                     </td>
                                     <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-red-700 border-r border-gray-100 text-center">
                                         {(() => {
-                                            const totalGross = results.reduce((sum, result) => sum + result.memberContribution + result.investment, 0);
-                                            const totalAfterIrpef = results.reduce((sum, result) => sum + (result.personalContributionsAfterIrpef > 0 ? result.personalContributionsAfterIrpef : result.memberContribution + result.investment), 0);
-                                            const effectiveRate = totalGross > 0 ? ((totalGross - totalAfterIrpef) / totalGross) * 100 : 0;
-                                            return effectiveRate > 0 ? `${effectiveRate.toFixed(1)}%` : "-";
+                                            const totalGross = results.reduce(
+                                                (sum, result) =>
+                                                    sum +
+                                                    result.memberContribution +
+                                                    result.investment,
+                                                0
+                                            );
+                                            const totalAfterIrpef =
+                                                results.reduce(
+                                                    (sum, result) =>
+                                                        sum +
+                                                        (result.personalContributionsAfterIrpef >
+                                                        0
+                                                            ? result.personalContributionsAfterIrpef
+                                                            : result.memberContribution +
+                                                              result.investment),
+                                                    0
+                                                );
+                                            const effectiveRate =
+                                                totalGross > 0
+                                                    ? ((totalGross -
+                                                          totalAfterIrpef) /
+                                                          totalGross) *
+                                                      100
+                                                    : 0;
+                                            return effectiveRate > 0
+                                                ? `${effectiveRate.toFixed(1)}%`
+                                                : "-";
                                         })()}
                                     </td>
                                     <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
                                         {formatCurrency(
-                                            results.reduce((sum, result) => 
-                                                sum + (result.personalContributionsAfterIrpef > 0 
-                                                    ? result.personalContributionsAfterIrpef 
-                                                    : result.memberContribution + result.investment), 0)
+                                            results.reduce(
+                                                (sum, result) =>
+                                                    sum +
+                                                    (result.personalContributionsAfterIrpef >
+                                                    0
+                                                        ? result.personalContributionsAfterIrpef
+                                                        : result.memberContribution +
+                                                          result.investment),
+                                                0
+                                            )
                                         )}
                                     </td>
                                     <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-emerald-700 border-r border-gray-100 text-center">

@@ -13,7 +13,11 @@ interface ParametersInputProps {
         value: CalculatorParams[K]
     ) => void;
     updateNestedParam: <
-        T extends "incomeIncrease" | "investmentIncrease" | "etfReinvestment" | "personalInvestment"
+        T extends
+            | "incomeIncrease"
+            | "investmentIncrease"
+            | "etfReinvestment"
+            | "personalInvestment"
     >(
         parentKey: T,
         childKey: keyof CalculatorParams[T],
@@ -522,99 +526,100 @@ export function ParametersInput({
                                         helpText="Aliquota di tassazione dell'ETF (es. 26%)"
                                         colorScheme="purple"
                                     />
-                                </div>                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Personal Investment Section */}
-                    <div className="bg-orange-50/30 rounded-lg p-4">
-                        <h4 className="text-md font-bold text-orange-800 mb-4 flex items-center">
-                            💰 Investimento Contributi Personali
-                        </h4>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-900 mb-3">
-                                    Investi Contributi Personali (dopo IRPEF)
-                                    <span
-                                        className="text-orange-600 cursor-help ml-2 hover:text-orange-800 transition-colors"
-                                        title="Investi il totale dei contributi personali (al netto delle tasse IRPEF) in investimenti alternativi"
-                                    >
-                                        ❓
-                                    </span>
-                                </label>
-                                <ToggleButton
-                                    options={[
-                                        {
-                                            value: true,
-                                            label: "✅ Sì, investi contributi",
-                                        },
-                                        {
-                                            value: false,
-                                            label: "❌ No, non investire",
-                                        },
-                                    ]}
-                                    selectedValue={
-                                        params.personalInvestment.enabled
-                                    }
-                                    onChange={(value) =>
-                                        updateNestedParam(
-                                            "personalInvestment",
-                                            "enabled",
-                                            value
-                                        )
-                                    }
-                                    colorScheme="orange"
-                                />
-                            </div>
-
-                            {params.personalInvestment.enabled && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <InputField
-                                        id="personalAnnualReturn"
-                                        label="Rendimento Investimento"
-                                        icon="📈"
-                                        value={
-                                            params.personalInvestment.annualReturn
-                                        }
-                                        onChange={(value) =>
-                                            updateNestedParam(
-                                                "personalInvestment",
-                                                "annualReturn",
-                                                value as number
-                                            )
-                                        }
-                                        min={0}
-                                        max={30}
-                                        step={0.1}
-                                        suffix="%"
-                                        helpText="Rendimento annuale previsto dell'investimento"
-                                        colorScheme="orange"
-                                    />
-
-                                    <InputField
-                                        id="personalTaxRate"
-                                        label="Tassazione Investimento"
-                                        icon="💰"
-                                        value={params.personalInvestment.taxRate}
-                                        onChange={(value) =>
-                                            updateNestedParam(
-                                                "personalInvestment",
-                                                "taxRate",
-                                                value as number
-                                            )
-                                        }
-                                        min={0}
-                                        max={100}
-                                        step={0.1}
-                                        suffix="%"
-                                        helpText="Aliquota di tassazione dell'investimento (es. 26%)"
-                                        colorScheme="orange"
-                                    />
                                 </div>
                             )}
                         </div>
                     </div>
+                </div>
+
+                {/* Personal Investment Section */}
+                <div className="bg-orange-50/30 rounded-lg p-4">
+                    <h4 className="text-md font-bold text-orange-800 mb-4 flex items-center">
+                        💰 Investimento Contributi Personali
+                    </h4>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-bold text-gray-900 mb-3">
+                                Investi Contributi Personali (dopo IRPEF)
+                                <span
+                                    className="text-orange-600 cursor-help ml-2 hover:text-orange-800 transition-colors"
+                                    title="Investi il totale dei contributi personali (al netto delle tasse IRPEF) in investimenti alternativi"
+                                >
+                                    ❓
+                                </span>
+                            </label>
+                            <ToggleButton
+                                options={[
+                                    {
+                                        value: true,
+                                        label: "✅ Sì, investi contributi",
+                                    },
+                                    {
+                                        value: false,
+                                        label: "❌ No, non investire",
+                                    },
+                                ]}
+                                selectedValue={
+                                    params.personalInvestment.enabled
+                                }
+                                onChange={(value) =>
+                                    updateNestedParam(
+                                        "personalInvestment",
+                                        "enabled",
+                                        value
+                                    )
+                                }
+                                colorScheme="orange"
+                            />
+                        </div>
+
+                        {params.personalInvestment.enabled && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <InputField
+                                    id="personalAnnualReturn"
+                                    label="Rendimento Investimento"
+                                    icon="📈"
+                                    value={
+                                        params.personalInvestment.annualReturn
+                                    }
+                                    onChange={(value) =>
+                                        updateNestedParam(
+                                            "personalInvestment",
+                                            "annualReturn",
+                                            value as number
+                                        )
+                                    }
+                                    min={0}
+                                    max={30}
+                                    step={0.1}
+                                    suffix="%"
+                                    helpText="Rendimento annuale previsto dell'investimento"
+                                    colorScheme="orange"
+                                />
+
+                                <InputField
+                                    id="personalTaxRate"
+                                    label="Tassazione Investimento"
+                                    icon="💰"
+                                    value={params.personalInvestment.taxRate}
+                                    onChange={(value) =>
+                                        updateNestedParam(
+                                            "personalInvestment",
+                                            "taxRate",
+                                            value as number
+                                        )
+                                    }
+                                    min={0}
+                                    max={100}
+                                    step={0.1}
+                                    suffix="%"
+                                    helpText="Aliquota di tassazione dell'investimento (es. 26%)"
+                                    colorScheme="orange"
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
             </AccordionSection>
         </div>
     );

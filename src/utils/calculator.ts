@@ -161,7 +161,7 @@ function calculateTfrTaxationRate(
 function calculateIrpefTax(income: number, currentYearIncome: number): number {
     // Calculate proportional taxation based on current year income brackets (like TFR)
     let effectiveRate = 0;
-    
+
     if (currentYearIncome <= 28000) {
         effectiveRate = 23;
     } else if (currentYearIncome <= 50000) {
@@ -179,27 +179,34 @@ function calculateIrpefTax(income: number, currentYearIncome: number): number {
             (bracket2Amount / currentYearIncome) * 35 +
             (bracket3Amount / currentYearIncome) * 43;
     }
-    
+
     return income * (effectiveRate / 100);
 }
 
 // Function to calculate effective IRPEF tax rate (mean aliquota)
-function calculateEffectiveIrpefRate(income: number, currentYearIncome: number): number {
+function calculateEffectiveIrpefRate(
+    income: number,
+    currentYearIncome: number
+): number {
     // Calculate proportional taxation based on current year income brackets
     if (currentYearIncome <= 28000) {
         return 23;
     } else if (currentYearIncome <= 50000) {
         const bracket1Amount = 28000;
         const bracket2Amount = currentYearIncome - 28000;
-        return (bracket1Amount / currentYearIncome) * 23 +
-               (bracket2Amount / currentYearIncome) * 35;
+        return (
+            (bracket1Amount / currentYearIncome) * 23 +
+            (bracket2Amount / currentYearIncome) * 35
+        );
     } else {
         const bracket1Amount = 28000;
         const bracket2Amount = 22000; // 50k - 28k
         const bracket3Amount = currentYearIncome - 50000;
-        return (bracket1Amount / currentYearIncome) * 23 +
-               (bracket2Amount / currentYearIncome) * 35 +
-               (bracket3Amount / currentYearIncome) * 43;
+        return (
+            (bracket1Amount / currentYearIncome) * 23 +
+            (bracket2Amount / currentYearIncome) * 35 +
+            (bracket3Amount / currentYearIncome) * 43
+        );
     }
 }
 
@@ -368,39 +375,49 @@ export function calculatePensionFund(
             : 0;
 
         // Personal investment calculations (investing total personal contributions after IRPEF tax)
-        const totalPersonalContributions = memberContribution + currentInvestment;
-        const irpefTaxOnPersonalContributions = params.personalInvestment.enabled
+        const totalPersonalContributions =
+            memberContribution + currentInvestment;
+        const irpefTaxOnPersonalContributions = params.personalInvestment
+            .enabled
             ? calculateIrpefTax(totalPersonalContributions, currentIncome)
             : 0;
         const personalInvestmentAmount = params.personalInvestment.enabled
             ? totalPersonalContributions - irpefTaxOnPersonalContributions
             : 0;
         const personalIrpefRate = params.personalInvestment.enabled
-            ? calculateEffectiveIrpefRate(totalPersonalContributions, currentIncome)
+            ? calculateEffectiveIrpefRate(
+                  totalPersonalContributions,
+                  currentIncome
+              )
             : 0;
 
         if (params.personalInvestment.enabled) {
             // Personal investment calculation with monthly compound interest,
             // but taxes applied only at year end
-            
+
             // Calculate gross accumulated value using monthly compounding
             personalAccumulatedValue = calculateETFMonthlyCompound(
                 personalAccumulatedValue,
                 personalInvestmentAmount,
                 params.personalInvestment.annualReturn
             );
-            
+
             // Track total contributions for reference
             totalPersonalInvestments += personalInvestmentAmount;
-            
+
             // Calculate total gains accumulated so far
-            const totalGains = Math.max(0, personalAccumulatedValue - totalPersonalInvestments);
-            
+            const totalGains = Math.max(
+                0,
+                personalAccumulatedValue - totalPersonalInvestments
+            );
+
             // Apply tax only on total gains (not monthly, but on cumulative gains)
-            const totalTaxOnGains = totalGains * (params.personalInvestment.taxRate / 100);
-            
+            const totalTaxOnGains =
+                totalGains * (params.personalInvestment.taxRate / 100);
+
             // Calculate net accumulated value (gross - total tax on all gains)
-            personalNetAccumulatedValue = personalAccumulatedValue - totalTaxOnGains;
+            personalNetAccumulatedValue =
+                personalAccumulatedValue - totalTaxOnGains;
         }
 
         const displayPersonalNetAccumulatedValue = personalNetAccumulatedValue;
@@ -497,7 +514,10 @@ export function calculatePensionFund(
 
     // Personal investment summary calculations
     const totalPersonalInvestment = params.personalInvestment.enabled
-        ? yearlyResults.reduce((sum, result) => sum + result.personalInvestmentAmount, 0)
+        ? yearlyResults.reduce(
+              (sum, result) => sum + result.personalInvestmentAmount,
+              0
+          )
         : 0;
     const finalPersonalValue = params.personalInvestment.enabled
         ? personalAccumulatedValue
@@ -603,7 +623,8 @@ export function exportToCSV(results: YearlyResult[]): string {
 
     // Calculate personal investment tax rate from the data (it's consistent across all years)
     const personalTaxRate = results.find(
-        (r) => r.personalAccumulatedValue > 0 && r.personalNetAccumulatedValue > 0
+        (r) =>
+            r.personalAccumulatedValue > 0 && r.personalNetAccumulatedValue > 0
     )
         ? (1 -
               results.find((r) => r.personalAccumulatedValue > 0)!
@@ -644,7 +665,9 @@ export function exportToCSV(results: YearlyResult[]): string {
                 result.personalAccumulatedValue.toFixed(2),
                 result.personalNetAccumulatedValue.toFixed(2),
                 result.personalNetRealValue.toFixed(2),
-                result.personalInvestmentAmount > 0 ? personalTaxRate.toFixed(1) : "0.0",
+                result.personalInvestmentAmount > 0
+                    ? personalTaxRate.toFixed(1)
+                    : "0.0",
             ].join(",")
         ),
     ].join("\n");
