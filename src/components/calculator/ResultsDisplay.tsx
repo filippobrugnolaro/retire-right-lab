@@ -423,7 +423,7 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
 
     return (
         <div className="space-y-8">
-            {/* Table 1: Contributions */}
+            {/* Table 1: Contributions - Full width at top */}
             <div className="w-full overflow-hidden">
                 <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">
                     Contributi e Detrazioni
@@ -541,16 +541,8 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                 </div>
             </div>
 
-            {/* Tables 2, 3, and ETF: Side by Side */}
-            <div
-                className={`grid gap-8 ${
-                    results.some(
-                        (result: YearlyResult) => result.etfInvestment > 0
-                    )
-                        ? "grid-cols-1 xl:grid-cols-3 lg:grid-cols-2"
-                        : "grid-cols-1 lg:grid-cols-2"
-                }`}
-            >
+            {/* Second row: Pension Fund and TFR Values side by side */}
+            <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
                 {/* Table 2: Pension Fund Values */}
                 <div className="w-full overflow-hidden">
                     <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">
@@ -722,108 +714,107 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                         </table>
                     </div>
                 </div>
+            </div>
 
-                {/* Table 4: ETF Values - Show only if ETF reinvestment is enabled */}
-                {results.some(
-                    (result: YearlyResult) => result.etfInvestment > 0
-                ) && (
-                    <div className="w-full overflow-hidden">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">
-                            Valori ETF Reinvestimento
-                        </h3>
-                        <div className="overflow-x-auto bg-white rounded-xl shadow-2xl border border-gray-200">
-                            <table className="w-full divide-y divide-gray-200">
-                                <thead className="bg-gradient-to-r from-emerald-600 to-teal-600">
-                                    <tr>
-                                        <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-emerald-400">
-                                            Anno
-                                        </th>
-                                        <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-emerald-400">
-                                            ETF Lordo
-                                        </th>
-                                        <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-emerald-400">
-                                            ETF Netto
-                                        </th>
-                                        <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-emerald-400">
-                                            ETF Reale Netto
-                                        </th>
-                                        <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider">
-                                            ETF Aliquota (%)
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-100">
-                                    {results.map((result, index) => (
-                                        <tr
-                                            key={result.year}
-                                            className={`hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 ${
-                                                index % 2 === 0
-                                                    ? "bg-gray-50/50"
-                                                    : "bg-white"
-                                            }`}
-                                        >
-                                            <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
-                                                {result.year}
-                                            </td>
-                                            <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
-                                                {formatCurrency(
-                                                    result.etfAccumulatedValue
-                                                )}
-                                            </td>
-                                            <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-emerald-700 border-r border-gray-100 text-center">
-                                                {formatCurrency(
-                                                    result.etfNetAccumulatedValue
-                                                )}
-                                            </td>
-                                            <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-teal-700 border-r border-gray-100 text-center">
-                                                {formatCurrency(
-                                                    result.etfNetRealValue
-                                                )}
-                                            </td>
-                                            <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-red-700 text-center">
-                                                {result.etfInvestment > 0 &&
-                                                calculationResult.finalEtfValue >
-                                                    0
-                                                    ? `${(
-                                                          (1 -
-                                                              calculationResult.netFinalEtfValue /
-                                                                  calculationResult.finalEtfValue) *
-                                                          100
-                                                      ).toFixed(1)}%`
-                                                    : "-"}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {/* Final values row */}
-                                    <tr className="bg-gradient-to-r from-emerald-100 to-teal-100 font-bold border-t-2 border-emerald-400">
+            {/* Third row: ETF Table - Full width - Show only if ETF reinvestment is enabled */}
+            {results.some(
+                (result: YearlyResult) => result.etfInvestment > 0
+            ) && (
+                <div className="w-full overflow-hidden">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">
+                        Valori ETF Reinvestimento
+                    </h3>
+                    <div className="overflow-x-auto bg-white rounded-xl shadow-2xl border border-gray-200">
+                        <table className="w-full divide-y divide-gray-200">
+                            <thead className="bg-gradient-to-r from-emerald-600 to-teal-600">
+                                <tr>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-emerald-400">
+                                        Anno
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-emerald-400">
+                                        ETF Lordo
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-emerald-400">
+                                        ETF Netto
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-emerald-400">
+                                        ETF Reale Netto
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider">
+                                        ETF Aliquota (%)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-100">
+                                {results.map((result, index) => (
+                                    <tr
+                                        key={result.year}
+                                        className={`hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 ${
+                                            index % 2 === 0
+                                                ? "bg-gray-50/50"
+                                                : "bg-white"
+                                        }`}
+                                    >
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
-                                            FINALE
+                                            {result.year}
                                         </td>
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
                                             {formatCurrency(
-                                                lastResult.etfAccumulatedValue
+                                                result.etfAccumulatedValue
                                             )}
                                         </td>
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-emerald-700 border-r border-gray-100 text-center">
                                             {formatCurrency(
-                                                lastResult.etfNetAccumulatedValue
+                                                result.etfNetAccumulatedValue
                                             )}
                                         </td>
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-teal-700 border-r border-gray-100 text-center">
                                             {formatCurrency(
-                                                lastResult.etfNetRealValue
+                                                result.etfNetRealValue
                                             )}
                                         </td>
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-red-700 text-center">
-                                            -
+                                            {result.etfInvestment > 0 &&
+                                            calculationResult.finalEtfValue > 0
+                                                ? `${(
+                                                      (1 -
+                                                          calculationResult.netFinalEtfValue /
+                                                              calculationResult.finalEtfValue) *
+                                                      100
+                                                  ).toFixed(1)}%`
+                                                : "-"}
                                         </td>
                                     </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                ))}
+                                {/* Final values row */}
+                                <tr className="bg-gradient-to-r from-emerald-100 to-teal-100 font-bold border-t-2 border-emerald-400">
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
+                                        FINALE
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
+                                        {formatCurrency(
+                                            lastResult.etfAccumulatedValue
+                                        )}
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-emerald-700 border-r border-gray-100 text-center">
+                                        {formatCurrency(
+                                            lastResult.etfNetAccumulatedValue
+                                        )}
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-teal-700 border-r border-gray-100 text-center">
+                                        {formatCurrency(
+                                            lastResult.etfNetRealValue
+                                        )}
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-red-700 text-center">
+                                        -
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }
