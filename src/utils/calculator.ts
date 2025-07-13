@@ -157,6 +157,52 @@ function calculateTfrTaxationRate(
     return totalProportionalTaxation / yearsToConsider;
 }
 
+// Function to calculate IRPEF tax amount on a given income
+function calculateIrpefTax(income: number, currentYearIncome: number): number {
+    // Calculate proportional taxation based on current year income brackets (like TFR)
+    let effectiveRate = 0;
+    
+    if (currentYearIncome <= 28000) {
+        effectiveRate = 23;
+    } else if (currentYearIncome <= 50000) {
+        const bracket1Amount = 28000;
+        const bracket2Amount = currentYearIncome - 28000;
+        effectiveRate =
+            (bracket1Amount / currentYearIncome) * 23 +
+            (bracket2Amount / currentYearIncome) * 35;
+    } else {
+        const bracket1Amount = 28000;
+        const bracket2Amount = 22000; // 50k - 28k
+        const bracket3Amount = currentYearIncome - 50000;
+        effectiveRate =
+            (bracket1Amount / currentYearIncome) * 23 +
+            (bracket2Amount / currentYearIncome) * 35 +
+            (bracket3Amount / currentYearIncome) * 43;
+    }
+    
+    return income * (effectiveRate / 100);
+}
+
+// Function to calculate effective IRPEF tax rate (mean aliquota)
+function calculateEffectiveIrpefRate(income: number, currentYearIncome: number): number {
+    // Calculate proportional taxation based on current year income brackets
+    if (currentYearIncome <= 28000) {
+        return 23;
+    } else if (currentYearIncome <= 50000) {
+        const bracket1Amount = 28000;
+        const bracket2Amount = currentYearIncome - 28000;
+        return (bracket1Amount / currentYearIncome) * 23 +
+               (bracket2Amount / currentYearIncome) * 35;
+    } else {
+        const bracket1Amount = 28000;
+        const bracket2Amount = 22000; // 50k - 28k
+        const bracket3Amount = currentYearIncome - 50000;
+        return (bracket1Amount / currentYearIncome) * 23 +
+               (bracket2Amount / currentYearIncome) * 35 +
+               (bracket3Amount / currentYearIncome) * 43;
+    }
+}
+
 export function calculatePensionFund(
     params: CalculatorParams
 ): CalculationResult {
@@ -168,6 +214,10 @@ export function calculatePensionFund(
     let cumulativeFiscalRelaxation = 0;
     let tfrGrossAccumulated = 0; // Track accumulated TFR gross value
     let etfAccumulatedValue = 0; // Track accumulated ETF value
+    let personalAccumulatedValue = 0; // Track accumulated personal investment value (gross)
+    let personalNetAccumulatedValue = 0; // Track accumulated personal investment value (net, after taxes)
+    let totalEtfContributions = 0; // Track total ETF contributions
+    let totalPersonalInvestments = 0; // Track total personal investments
 
     for (let year = 1; year <= params.duration; year++) {
         // Apply income increase
@@ -299,16 +349,65 @@ export function calculatePensionFund(
                 etfInvestment,
                 params.etfReinvestment.annualReturn
             );
+            totalEtfContributions += etfInvestment;
         }
 
-        // Calculate ETF net values (after taxation)
+        // Calculate ETF net values (after taxation on gains only)
+        const etfGains = params.etfReinvestment.enabled
+            ? Math.max(0, etfAccumulatedValue - totalEtfContributions)
+            : 0;
+        const etfTaxOnGains = etfGains * (params.etfReinvestment.taxRate / 100);
         const etfNetAccumulatedValue = params.etfReinvestment.enabled
-            ? etfAccumulatedValue * (1 - params.etfReinvestment.taxRate / 100)
+            ? etfAccumulatedValue - etfTaxOnGains
             : 0;
 
         // Calculate ETF net real value (adjusted for inflation)
         const etfNetRealValue = params.etfReinvestment.enabled
             ? etfNetAccumulatedValue /
+              Math.pow(1 + params.inflation / 100, year)
+            : 0;
+
+        // Personal investment calculations (investing total personal contributions after IRPEF tax)
+        const totalPersonalContributions = memberContribution + currentInvestment;
+        const irpefTaxOnPersonalContributions = params.personalInvestment.enabled
+            ? calculateIrpefTax(totalPersonalContributions, currentIncome)
+            : 0;
+        const personalInvestmentAmount = params.personalInvestment.enabled
+            ? totalPersonalContributions - irpefTaxOnPersonalContributions
+            : 0;
+        const personalIrpefRate = params.personalInvestment.enabled
+            ? calculateEffectiveIrpefRate(totalPersonalContributions, currentIncome)
+            : 0;
+
+        if (params.personalInvestment.enabled) {
+            // Personal investment calculation with monthly compound interest,
+            // but taxes applied only at year end
+            
+            // Calculate gross accumulated value using monthly compounding
+            personalAccumulatedValue = calculateETFMonthlyCompound(
+                personalAccumulatedValue,
+                personalInvestmentAmount,
+                params.personalInvestment.annualReturn
+            );
+            
+            // Track total contributions for reference
+            totalPersonalInvestments += personalInvestmentAmount;
+            
+            // Calculate total gains accumulated so far
+            const totalGains = Math.max(0, personalAccumulatedValue - totalPersonalInvestments);
+            
+            // Apply tax only on total gains (not monthly, but on cumulative gains)
+            const totalTaxOnGains = totalGains * (params.personalInvestment.taxRate / 100);
+            
+            // Calculate net accumulated value (gross - total tax on all gains)
+            personalNetAccumulatedValue = personalAccumulatedValue - totalTaxOnGains;
+        }
+
+        const displayPersonalNetAccumulatedValue = personalNetAccumulatedValue;
+
+        // Calculate personal investment net real value (adjusted for inflation)
+        const personalNetRealValue = params.personalInvestment.enabled
+            ? displayPersonalNetAccumulatedValue /
               Math.pow(1 + params.inflation / 100, year)
             : 0;
 
@@ -338,6 +437,19 @@ export function calculatePensionFund(
                 : 0,
             etfNetAccumulatedValue,
             etfNetRealValue,
+            personalInvestmentAmount,
+            personalContributionsAfterIrpef: params.personalInvestment.enabled
+                ? personalInvestmentAmount
+                : 0,
+            personalIrpefRate,
+            personalTaxRate: params.personalInvestment.enabled
+                ? params.personalInvestment.taxRate
+                : 0,
+            personalAccumulatedValue: params.personalInvestment.enabled
+                ? personalAccumulatedValue
+                : 0,
+            personalNetAccumulatedValue: displayPersonalNetAccumulatedValue,
+            personalNetRealValue,
         });
     }
 
@@ -383,6 +495,28 @@ export function calculatePensionFund(
               ) - 1
             : 0;
 
+    // Personal investment summary calculations
+    const totalPersonalInvestment = params.personalInvestment.enabled
+        ? yearlyResults.reduce((sum, result) => sum + result.personalInvestmentAmount, 0)
+        : 0;
+    const finalPersonalValue = params.personalInvestment.enabled
+        ? personalAccumulatedValue
+        : 0;
+    const netFinalPersonalValue = params.personalInvestment.enabled
+        ? finalPersonalValue * (1 - params.personalInvestment.taxRate / 100)
+        : 0;
+    const netRealFinalPersonalValue = params.personalInvestment.enabled
+        ? netFinalPersonalValue /
+          Math.pow(1 + params.inflation / 100, params.duration)
+        : 0;
+    const personalAnnualizedReturn =
+        params.personalInvestment.enabled && totalPersonalInvestment > 0
+            ? Math.pow(
+                  netFinalPersonalValue / totalPersonalInvestment,
+                  1 / params.duration
+              ) - 1
+            : 0;
+
     return {
         yearlyResults,
         totalContributions,
@@ -398,6 +532,11 @@ export function calculatePensionFund(
         netFinalEtfValue,
         netRealFinalEtfValue,
         etfAnnualizedReturn: etfAnnualizedReturn * 100,
+        totalPersonalInvestment,
+        finalPersonalValue,
+        netFinalPersonalValue,
+        netRealFinalPersonalValue,
+        personalAnnualizedReturn: personalAnnualizedReturn * 100,
     };
 }
 
@@ -442,6 +581,12 @@ export function exportToCSV(results: YearlyResult[]): string {
         "ETF Netto",
         "ETF Reale Netto",
         "ETF Aliquota (%)",
+        "Investimento Personale Annuale",
+        "Contributi Personali Dopo IRPEF",
+        "Investimento Personale Lordo",
+        "Investimento Personale Netto",
+        "Investimento Personale Reale Netto",
+        "Investimento Personale Aliquota (%)",
     ];
 
     // Calculate ETF tax rate from the data (it's consistent across all years)
@@ -453,6 +598,18 @@ export function exportToCSV(results: YearlyResult[]): string {
                   .etfNetAccumulatedValue /
                   results.find((r) => r.etfAccumulatedValue > 0)!
                       .etfAccumulatedValue) *
+          100
+        : 0;
+
+    // Calculate personal investment tax rate from the data (it's consistent across all years)
+    const personalTaxRate = results.find(
+        (r) => r.personalAccumulatedValue > 0 && r.personalNetAccumulatedValue > 0
+    )
+        ? (1 -
+              results.find((r) => r.personalAccumulatedValue > 0)!
+                  .personalNetAccumulatedValue /
+                  results.find((r) => r.personalAccumulatedValue > 0)!
+                      .personalAccumulatedValue) *
           100
         : 0;
 
@@ -482,6 +639,12 @@ export function exportToCSV(results: YearlyResult[]): string {
                 result.etfNetAccumulatedValue.toFixed(2),
                 result.etfNetRealValue.toFixed(2),
                 result.etfInvestment > 0 ? etfTaxRate.toFixed(1) : "0.0",
+                result.personalInvestmentAmount.toFixed(2),
+                result.personalContributionsAfterIrpef.toFixed(2),
+                result.personalAccumulatedValue.toFixed(2),
+                result.personalNetAccumulatedValue.toFixed(2),
+                result.personalNetRealValue.toFixed(2),
+                result.personalInvestmentAmount > 0 ? personalTaxRate.toFixed(1) : "0.0",
             ].join(",")
         ),
     ].join("\n");

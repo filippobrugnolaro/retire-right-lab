@@ -22,6 +22,11 @@ export interface CalculatorParams {
         annualReturn: number; // Rendimento annuale ETF (%)
         taxRate: number; // Tassazione ETF (%)
     };
+    personalInvestment: {
+        enabled: boolean; // Se investire contributi personali
+        annualReturn: number; // Rendimento annuale (%)
+        taxRate: number; // Tassazione (%)
+    };
 }
 
 export interface YearlyResult {
@@ -52,6 +57,14 @@ export interface YearlyResult {
     etfAccumulatedValue: number; // ETF accumulated value (gross)
     etfNetAccumulatedValue: number; // ETF accumulated value after taxation
     etfNetRealValue: number; // ETF net value adjusted for inflation
+    // Personal investment fields
+    personalInvestmentAmount: number; // Annual personal investment (equals memberContribution * 0.74 if enabled)
+    personalContributionsAfterIrpef: number; // Total personal contributions after IRPEF taxation
+    personalIrpefRate: number; // Effective IRPEF rate applied to personal contributions
+    personalTaxRate: number; // Tax rate applied to personal investment gains
+    personalAccumulatedValue: number; // Personal investment accumulated value (gross)
+    personalNetAccumulatedValue: number; // Personal investment accumulated value after taxation
+    personalNetRealValue: number; // Personal investment net value adjusted for inflation
 }
 
 export interface CalculationResult {
@@ -70,4 +83,10 @@ export interface CalculationResult {
     netFinalEtfValue: number; // Final ETF value after taxation
     netRealFinalEtfValue: number; // Final ETF value after taxation and inflation
     etfAnnualizedReturn: number; // ETF annualized return (net)
+    // Personal investment summary
+    totalPersonalInvestment: number; // Total amount invested personally
+    finalPersonalValue: number; // Final personal investment value (gross)
+    netFinalPersonalValue: number; // Final personal investment value after taxation
+    netRealFinalPersonalValue: number; // Final personal investment value after taxation and inflation
+    personalAnnualizedReturn: number; // Personal investment annualized return (net)
 }

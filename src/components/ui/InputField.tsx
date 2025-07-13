@@ -14,7 +14,7 @@ interface InputFieldProps {
     suffix?: string;
     helpText?: string;
     options?: { value: string | boolean; label: string }[];
-    colorScheme?: "blue" | "green" | "purple";
+    colorScheme?: "blue" | "green" | "purple" | "orange";
     className?: string;
     disabled?: boolean;
 }
@@ -40,12 +40,14 @@ export function InputField({
         blue: "focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400",
         green: "focus:ring-green-500 focus:border-green-500 hover:border-green-400",
         purple: "focus:ring-purple-500 focus:border-purple-500 hover:border-purple-400",
+        orange: "focus:ring-orange-500 focus:border-orange-500 hover:border-orange-400",
     };
 
     const helpColorClasses = {
         blue: "text-blue-600 hover:text-blue-800",
         green: "text-green-600 hover:text-green-800",
         purple: "text-purple-600 hover:text-purple-800",
+        orange: "text-orange-600 hover:text-orange-800",
     };
 
     return (

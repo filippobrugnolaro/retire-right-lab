@@ -345,6 +345,87 @@ export function ResultsDisplay({
                 </div>
             )}
 
+            {/* Personal Investment Results */}
+            {results.totalPersonalInvestment > 0 && (
+                <div className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 p-8 rounded-3xl border-2 border-orange-200/60 shadow-2xl">
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-700 via-amber-600 to-yellow-600 bg-clip-text text-transparent mb-8 text-center flex items-center justify-center">
+                        💰 Risultati Investimento Contributi Personali
+                    </h2>
+
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <SummaryCard
+                            title="Investimento Totale"
+                            value={formatCurrency(results.totalPersonalInvestment)}
+                            description="Totale contributi personali investiti (dopo IRPEF)"
+                            icon="💵"
+                            colorScheme="orange"
+                        />
+                        <SummaryCard
+                            title="Investimento Finale (Netto)"
+                            value={formatCurrency(results.netFinalPersonalValue)}
+                            description="Valore dopo tassazione finale"
+                            icon="💎"
+                            colorScheme="green"
+                        />
+                        <SummaryCard
+                            title="Investimento Reale (Netto)"
+                            value={formatCurrency(results.netRealFinalPersonalValue)}
+                            description="Potere d'acquisto netto"
+                            icon="🏆"
+                            colorScheme="orange"
+                        />
+                        <SummaryCard
+                            title="Rendimento Investimento"
+                            value={formatPercentage(
+                                results.personalAnnualizedReturn
+                            )}
+                            description="Tasso annuo composto netto"
+                            icon="🚀"
+                            colorScheme="pink"
+                        />
+                    </div>
+
+                    {/* Combined Total: TFR + Personal Investment */}
+                    <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-white/20">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">
+                            🎯 Totale Combinato (TFR azienda + Investimento Contributi Personali)
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    Valore Totale Netto
+                                </p>
+                                <p className="text-2xl font-bold text-blue-600">
+                                    {formatCurrency(
+                                        (lastResult?.tfrNetValue || 0) +
+                                            results.netFinalPersonalValue
+                                    )}
+                                </p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    Potere d&apos;Acquisto Totale
+                                </p>
+                                <p className="text-2xl font-bold text-purple-600">
+                                    {formatCurrency(
+                                        (lastResult?.tfrNetRealValue || 0) +
+                                            results.netRealFinalPersonalValue
+                                    )}
+                                </p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    vs Solo TFR
+                                </p>
+                                <p className="text-xl font-bold text-green-600">
+                                    +{formatCurrency(results.netFinalPersonalValue)}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Detailed Summary Cards */}
             <div className="space-y-8">
                 <h2 className="text-xl font-bold text-gray-800 text-center">
@@ -1070,6 +1151,134 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                     <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-teal-700 border-r border-gray-100 text-center">
                                         {formatCurrency(
                                             lastResult.etfNetRealValue
+                                        )}
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-red-700 text-center">
+                                        -
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Fourth row: Personal Investment Table - Full width - Show only if personal investment is enabled */}
+            {results.some(
+                (result: YearlyResult) => result.personalInvestmentAmount > 0
+            ) && (
+                <div className="w-full overflow-hidden">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">
+                        Valori Investimento Totale Contributi Personali
+                    </h3>
+                    <div className="overflow-x-auto bg-white rounded-xl shadow-2xl border border-gray-200">
+                        <table className="w-full divide-y divide-gray-200">
+                            <thead className="bg-gradient-to-r from-orange-600 to-amber-600">
+                                <tr>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-orange-400">
+                                        Anno
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-orange-400">
+                                        Contributi Personali (lordo)
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-orange-400">
+                                        Aliquota IRPEF (%)
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-orange-400">
+                                        Totale Investimento Personale (dopo IRPEF)
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-orange-400">
+                                        Valore Netto
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider border-r border-orange-400">
+                                        Valore Reale Netto
+                                    </th>
+                                    <th className="px-4 sm:px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider">
+                                        Aliquota (%)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-100">
+                                {results.map((result, index) => (
+                                    <tr
+                                        key={result.year}
+                                        className={`hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 transition-all duration-200 ${
+                                            index % 2 === 0
+                                                ? "bg-gray-50"
+                                                : "bg-white"
+                                        }`}
+                                    >
+                                        <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100 text-center font-semibold">
+                                            {result.year}
+                                        </td>
+                                        <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100 text-center">
+                                            {formatCurrency(
+                                                result.memberContribution + result.investment
+                                            )}
+                                        </td>
+                                        <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-red-700 border-r border-gray-100 text-center font-semibold">
+                                            {result.personalIrpefRate > 0 
+                                                ? `${result.personalIrpefRate.toFixed(1)}%`
+                                                : "-"}
+                                        </td>
+                                        <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-100 text-center">
+                                            {formatCurrency(
+                                                result.personalContributionsAfterIrpef > 0 
+                                                    ? result.personalContributionsAfterIrpef 
+                                                    : result.memberContribution + result.investment
+                                            )}
+                                        </td>
+                                        <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-emerald-700 border-r border-gray-100 text-center font-semibold">
+                                            {formatCurrency(
+                                                result.personalNetAccumulatedValue
+                                            )}
+                                        </td>
+                                        <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-amber-700 border-r border-gray-100 text-center font-semibold">
+                                            {formatCurrency(
+                                                result.personalNetRealValue
+                                            )}
+                                        </td>
+                                        <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm text-red-700 text-center">
+                                            {result.personalTaxRate > 0
+                                                ? `${result.personalTaxRate.toFixed(1)}%`
+                                                : "-"}
+                                        </td>
+                                    </tr>
+                                ))}
+                                {/* Final values row */}
+                                <tr className="bg-gradient-to-r from-orange-100 to-amber-100 font-bold border-t-2 border-orange-400">
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
+                                        FINALE
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
+                                        {formatCurrency(
+                                            results.reduce((sum, result) => sum + result.memberContribution + result.investment, 0)
+                                        )}
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-red-700 border-r border-gray-100 text-center">
+                                        {(() => {
+                                            const totalGross = results.reduce((sum, result) => sum + result.memberContribution + result.investment, 0);
+                                            const totalAfterIrpef = results.reduce((sum, result) => sum + (result.personalContributionsAfterIrpef > 0 ? result.personalContributionsAfterIrpef : result.memberContribution + result.investment), 0);
+                                            const effectiveRate = totalGross > 0 ? ((totalGross - totalAfterIrpef) / totalGross) * 100 : 0;
+                                            return effectiveRate > 0 ? `${effectiveRate.toFixed(1)}%` : "-";
+                                        })()}
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
+                                        {formatCurrency(
+                                            results.reduce((sum, result) => 
+                                                sum + (result.personalContributionsAfterIrpef > 0 
+                                                    ? result.personalContributionsAfterIrpef 
+                                                    : result.memberContribution + result.investment), 0)
+                                        )}
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-emerald-700 border-r border-gray-100 text-center">
+                                        {formatCurrency(
+                                            lastResult.personalNetAccumulatedValue
+                                        )}
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-amber-700 border-r border-gray-100 text-center">
+                                        {formatCurrency(
+                                            lastResult.personalNetRealValue
                                         )}
                                     </td>
                                     <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-red-700 text-center">

@@ -5,7 +5,7 @@ interface ToggleButtonProps {
     options: { value: boolean; label: string }[];
     selectedValue: boolean;
     onChange: (value: boolean) => void;
-    colorScheme?: "blue" | "green" | "purple";
+    colorScheme?: "blue" | "green" | "purple" | "orange";
 }
 
 export function ToggleButton({
@@ -18,12 +18,14 @@ export function ToggleButton({
         blue: "bg-blue-700 text-white border-blue-700",
         green: "bg-green-700 text-white border-green-700",
         purple: "bg-purple-700 text-white border-purple-700",
+        orange: "bg-orange-700 text-white border-orange-700",
     };
 
     const inactiveClasses = {
         blue: "bg-white text-gray-900 border-gray-300 hover:border-blue-500",
         green: "bg-white text-gray-900 border-gray-300 hover:border-green-500",
         purple: "bg-white text-gray-900 border-gray-300 hover:border-purple-500",
+        orange: "bg-white text-gray-900 border-gray-300 hover:border-orange-500",
     };
 
     return (

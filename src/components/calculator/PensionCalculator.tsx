@@ -38,6 +38,11 @@ const defaultParams: CalculatorParams = {
         annualReturn: 7,
         taxRate: 26,
     },
+    personalInvestment: {
+        enabled: false,
+        annualReturn: 7,
+        taxRate: 26,
+    },
 };
 
 export default function PensionCalculator() {
@@ -59,7 +64,7 @@ export default function PensionCalculator() {
     };
 
     const updateNestedParam = <
-        T extends "incomeIncrease" | "investmentIncrease" | "etfReinvestment"
+        T extends "incomeIncrease" | "investmentIncrease" | "etfReinvestment" | "personalInvestment"
     >(
         parentKey: T,
         childKey: keyof CalculatorParams[T],
