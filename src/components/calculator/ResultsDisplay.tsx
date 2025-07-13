@@ -40,115 +40,381 @@ export function ResultsDisplay({
     }
 
     // Show only cards (or default behavior)
+    const lastResult = results.yearlyResults[results.yearlyResults.length - 1];
+    const hasTfrData = lastResult?.tfrNetValue > 0;
+    const hasEtfData = results.totalEtfInvestment > 0;
+
     return (
         <div className="space-y-10 pb-8">
-            {/* Enhanced Summary Cards with Better Responsive Layout */}
+            {/* Main Comparison Section */}
+            <div className="bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 p-8 rounded-3xl border-2 border-indigo-200/60 shadow-2xl">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-700 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-8 text-center flex items-center justify-center">
+                    🏆 Confronto Finale: Fondo Pensione vs TFR Aziendale
+                </h2>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    {/* Pension Fund Results */}
+                    <div className="bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600 p-6 rounded-2xl text-white shadow-xl">
+                        <div className="text-center">
+                            <div className="text-4xl mb-2">🏛️</div>
+                            <h3 className="text-xl font-bold mb-4">
+                                Fondo Pensione
+                            </h3>
+                            <div className="space-y-3">
+                                <div>
+                                    <p className="text-sm opacity-90">
+                                        Valore Finale Netto
+                                    </p>
+                                    <p className="text-2xl font-bold">
+                                        {formatCurrency(results.netFinalValue)}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm opacity-90">
+                                        Potere d&apos;Acquisto Reale
+                                    </p>
+                                    <p className="text-xl font-semibold">
+                                        {formatCurrency(
+                                            results.netRealFinalValue
+                                        )}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm opacity-90">
+                                        Rendimento Annualizzato
+                                    </p>
+                                    <p className="text-lg font-semibold">
+                                        {formatPercentage(
+                                            results.netAnnualizedReturn
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* TFR Company Results */}
+                    <div className="bg-gradient-to-br from-orange-400 via-red-500 to-pink-600 p-6 rounded-2xl text-white shadow-xl">
+                        <div className="text-center">
+                            <div className="text-4xl mb-2">🏢</div>
+                            <h3 className="text-xl font-bold mb-4">
+                                TFR in Azienda
+                            </h3>
+                            {hasTfrData ? (
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-sm opacity-90">
+                                            Valore Finale Netto
+                                        </p>
+                                        <p className="text-2xl font-bold">
+                                            {formatCurrency(
+                                                lastResult.tfrNetValue
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm opacity-90">
+                                            Potere d&apos;Acquisto Reale
+                                        </p>
+                                        <p className="text-xl font-semibold">
+                                            {formatCurrency(
+                                                lastResult.tfrNetRealValue
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm opacity-90">
+                                            Rendimento Annualizzato
+                                        </p>
+                                        <p className="text-lg font-semibold">
+                                            {formatPercentage(
+                                                (() => {
+                                                    // TFR grows at 1.5% + 75% of inflation rate
+                                                    // We can calculate the effective rate from the first year's data
+                                                    if (
+                                                        results.yearlyResults
+                                                            .length === 0
+                                                    )
+                                                        return 0;
+
+                                                    const firstYear =
+                                                        results
+                                                            .yearlyResults[0];
+                                                    if (
+                                                        !firstYear ||
+                                                        firstYear.tfr === 0
+                                                    )
+                                                        return 0;
+
+                                                    // Calculate the actual growth rate from the TFR values
+                                                    // Using the relationship between first and last year values
+                                                    const years =
+                                                        results.yearlyResults
+                                                            .length;
+                                                    const totalTfrContributions =
+                                                        results.yearlyResults.reduce(
+                                                            (sum, r) =>
+                                                                sum + r.tfr,
+                                                            0
+                                                        );
+
+                                                    if (
+                                                        totalTfrContributions ===
+                                                            0 ||
+                                                        years === 0
+                                                    )
+                                                        return 0;
+
+                                                    // For TFR, the theoretical return is 1.5% + 75% of inflation
+                                                    // We can estimate inflation from context or calculate effective rate
+                                                    // For now, let's calculate the actual effective rate from the data
+                                                    const effectiveRate =
+                                                        Math.pow(
+                                                            lastResult.tfrGrossValue /
+                                                                totalTfrContributions,
+                                                            1 / years
+                                                        ) - 1;
+
+                                                    return effectiveRate;
+                                                })()
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center py-4">
+                                    <p className="text-lg opacity-75">
+                                        TFR non calcolato
+                                    </p>
+                                    <p className="text-sm opacity-60">
+                                        Attiva il calcolo TFR per vedere il
+                                        confronto
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Comparison Summary */}
+                {hasTfrData && (
+                    <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-white/20">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">
+                            📊 Vantaggio Fondo Pensione
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    Differenza Netta
+                                </p>
+                                <p
+                                    className={`text-xl font-bold ${
+                                        results.netFinalValue >
+                                        lastResult.tfrNetValue
+                                            ? "text-green-600"
+                                            : "text-red-600"
+                                    }`}
+                                >
+                                    {formatCurrency(
+                                        results.netFinalValue -
+                                            lastResult.tfrNetValue
+                                    )}
+                                </p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    Differenza Reale
+                                </p>
+                                <p
+                                    className={`text-xl font-bold ${
+                                        results.netRealFinalValue >
+                                        lastResult.tfrNetRealValue
+                                            ? "text-green-600"
+                                            : "text-red-600"
+                                    }`}
+                                >
+                                    {formatCurrency(
+                                        results.netRealFinalValue -
+                                            lastResult.tfrNetRealValue
+                                    )}
+                                </p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    Vantaggio %
+                                </p>
+                                <p
+                                    className={`text-xl font-bold ${
+                                        results.netFinalValue >
+                                        lastResult.tfrNetValue
+                                            ? "text-green-600"
+                                            : "text-red-600"
+                                    }`}
+                                >
+                                    {formatPercentage(
+                                        (results.netFinalValue /
+                                            lastResult.tfrNetValue -
+                                            1) *
+                                            100
+                                    )}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* ETF Reinvestment Results */}
+            {hasEtfData && (
+                <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-8 rounded-3xl border-2 border-emerald-200/60 shadow-2xl">
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-700 via-teal-600 to-cyan-600 bg-clip-text text-transparent mb-8 text-center flex items-center justify-center">
+                        📈 Risultati ETF Reinvestimento Detrazioni
+                    </h2>
+
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <SummaryCard
+                            title="ETF Investimento Totale"
+                            value={formatCurrency(results.totalEtfInvestment)}
+                            description="Detrazioni reinvestite in ETF"
+                            icon="💰"
+                            colorScheme="teal"
+                        />
+                        <SummaryCard
+                            title="ETF Finale (Netto)"
+                            value={formatCurrency(results.netFinalEtfValue)}
+                            description="Valore ETF dopo tassazione"
+                            icon="�"
+                            colorScheme="green"
+                        />
+                        <SummaryCard
+                            title="ETF Reale (Netto)"
+                            value={formatCurrency(results.netRealFinalEtfValue)}
+                            description="Potere d'acquisto ETF netto"
+                            icon="🏆"
+                            colorScheme="orange"
+                        />
+                        <SummaryCard
+                            title="ETF Rendimento"
+                            value={formatPercentage(
+                                results.etfAnnualizedReturn
+                            )}
+                            description="Tasso annuo composto ETF"
+                            icon="🚀"
+                            colorScheme="pink"
+                        />
+                    </div>
+
+                    {/* Combined Total with ETF */}
+                    <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-white/20">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">
+                            🎯 Totale Combinato (Fondo + ETF)
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    Valore Totale Netto
+                                </p>
+                                <p className="text-2xl font-bold text-blue-600">
+                                    {formatCurrency(
+                                        results.netFinalValue +
+                                            results.netFinalEtfValue
+                                    )}
+                                </p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    Potere d&apos;Acquisto Totale
+                                </p>
+                                <p className="text-2xl font-bold text-purple-600">
+                                    {formatCurrency(
+                                        results.netRealFinalValue +
+                                            results.netRealFinalEtfValue
+                                    )}
+                                </p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    vs Solo Fondo
+                                </p>
+                                <p className="text-xl font-bold text-green-600">
+                                    +{formatCurrency(results.netFinalEtfValue)}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Detailed Summary Cards */}
             <div className="space-y-8">
-                {/* Primary Results - Most Important Cards */}
+                <h2 className="text-xl font-bold text-gray-800 text-center">
+                    📋 Riepilogo Dettagliato
+                </h2>
+
+                {/* Primary Results */}
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
-                    <SummaryCard
-                        title="Fondo Finale (Netto)"
-                        value={formatCurrency(results.netFinalValue)}
-                        description="Dopo tassazione"
-                        icon="💎"
-                        colorScheme="green"
-                    />
-                    <SummaryCard
-                        title="Fondo Reale (Netto)"
-                        value={formatCurrency(results.netRealFinalValue)}
-                        description="Potere d'acquisto netto"
-                        icon="🏆"
-                        colorScheme="orange"
-                    />
                     <SummaryCard
                         title="Contributi Totali"
                         value={formatCurrency(results.totalContributions)}
-                        description="Capitale investito"
+                        description="Capitale investito nel fondo"
                         icon="📊"
-                        colorScheme="teal"
-                    />
-                    <SummaryCard
-                        title="Rendimento Annualizzato"
-                        value={formatPercentage(results.netAnnualizedReturn)}
-                        description="Tasso annuo composto netto"
-                        icon="🚀"
-                        colorScheme="pink"
-                    />
-                </div>
-
-                {/* Secondary Results - Additional Details */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
-                    <SummaryCard
-                        title="Fondo Finale (Lordo)"
-                        value={formatCurrency(results.finalValue)}
-                        description="Valore nominale accumulo"
-                        icon="💰"
                         colorScheme="blue"
                     />
                     <SummaryCard
-                        title="Fondo Reale (Lordo)"
-                        value={formatCurrency(results.realFinalValue)}
-                        description="Potere d'acquisto lordo"
-                        icon="📈"
-                        colorScheme="purple"
+                        title="Guadagno Lordo"
+                        value={formatCurrency(
+                            results.finalValue - results.totalContributions
+                        )}
+                        description="Plusvalenza totale"
+                        icon="�"
+                        colorScheme="green"
                     />
                     <SummaryCard
                         title="Detrazione Fiscale"
                         value={formatCurrency(
-                            results.yearlyResults[
-                                results.yearlyResults.length - 1
-                            ]?.cumulativeFiscalRelaxation || 0
+                            lastResult?.cumulativeFiscalRelaxation || 0
                         )}
                         description="Risparmio fiscale totale"
                         icon="🏛️"
                         colorScheme="indigo"
                     />
+                    <SummaryCard
+                        title="ROI Totale"
+                        value={formatPercentage(
+                            ((results.finalValue - results.totalContributions) /
+                                results.totalContributions) *
+                                100
+                        )}
+                        description="Ritorno sull'investimento"
+                        icon="📈"
+                        colorScheme="purple"
+                    />
                 </div>
 
-                {/* ETF Results - Show only if ETF reinvestment is enabled */}
-                {results.totalEtfInvestment > 0 && (
-                    <>
-                        <h3 className="text-lg font-bold text-gray-800 mt-8 mb-4 flex items-center">
-                            📊 Risultati ETF Reinvestimento
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
-                            <SummaryCard
-                                title="ETF Investimento Totale"
-                                value={formatCurrency(
-                                    results.totalEtfInvestment
-                                )}
-                                description="Detrazione reinvestita in ETF"
-                                icon="📊"
-                                colorScheme="green"
-                            />
-                            <SummaryCard
-                                title="ETF Finale (Netto)"
-                                value={formatCurrency(results.netFinalEtfValue)}
-                                description="Valore ETF dopo tassazione"
-                                icon="💎"
-                                colorScheme="teal"
-                            />
-                            <SummaryCard
-                                title="ETF Reale (Netto)"
-                                value={formatCurrency(
-                                    results.netRealFinalEtfValue
-                                )}
-                                description="Potere d'acquisto ETF netto"
-                                icon="🏆"
-                                colorScheme="orange"
-                            />
-                            <SummaryCard
-                                title="ETF Rendimento Annualizzato"
-                                value={formatPercentage(
-                                    results.etfAnnualizedReturn
-                                )}
-                                description="Tasso annuo composto ETF"
-                                icon="🚀"
-                                colorScheme="pink"
-                            />
-                        </div>
-                    </>
-                )}
+                {/* Secondary Results */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 xl:gap-6">
+                    <SummaryCard
+                        title="Fondo Finale (Lordo)"
+                        value={formatCurrency(results.finalValue)}
+                        description="Valore nominale accumulo"
+                        icon="💎"
+                        colorScheme="teal"
+                    />
+                    <SummaryCard
+                        title="Fondo Reale (Lordo)"
+                        value={formatCurrency(results.realFinalValue)}
+                        description="Potere d'acquisto lordo"
+                        icon="🏆"
+                        colorScheme="orange"
+                    />
+                    <SummaryCard
+                        title="Rendimento Lordo"
+                        value={formatPercentage(results.annualizedReturn)}
+                        description="Tasso annuo composto lordo"
+                        icon="🚀"
+                        colorScheme="pink"
+                    />
+                </div>
             </div>
 
             {/* Enhanced Performance Summary */}

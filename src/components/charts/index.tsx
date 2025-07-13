@@ -75,6 +75,23 @@ const CumulativeTaxBenefitsChart = dynamic(
     }
 );
 
+const TfrComparisonChart = dynamic(
+    () =>
+        import("./charts/TfrComparisonChart").then((mod) => ({
+            default: mod.TfrComparisonChart,
+        })),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200">
+                <div className="h-96 flex items-center justify-center">
+                    <div className="text-gray-500">Caricamento grafico...</div>
+                </div>
+            </div>
+        ),
+    }
+);
+
 interface ChartsProps {
     results: CalculationResult;
 }
@@ -103,6 +120,9 @@ export function Charts({ results }: ChartsProps) {
     }
     return (
         <div className="space-y-8">
+            {/* TFR Comparison Chart - Show first for better comparison */}
+            <TfrComparisonChart results={results} />
+
             {/* Growth Over Time Chart */}
             <AccumulationChart results={results} />
 
