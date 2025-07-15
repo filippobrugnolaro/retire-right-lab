@@ -497,8 +497,14 @@ export function calculatePensionFund(
     const finalEtfValue = params.etfReinvestment.enabled
         ? etfAccumulatedValue
         : 0;
+    // Fix: Calculate net ETF value using the same method as yearly calculations (tax only gains)
+    const etfTotalGains = params.etfReinvestment.enabled
+        ? Math.max(0, finalEtfValue - totalEtfInvestment)
+        : 0;
+    const etfTaxOnGains =
+        etfTotalGains * (params.etfReinvestment.taxRate / 100);
     const netFinalEtfValue = params.etfReinvestment.enabled
-        ? finalEtfValue * (1 - params.etfReinvestment.taxRate / 100)
+        ? finalEtfValue - etfTaxOnGains
         : 0;
     const netRealFinalEtfValue = params.etfReinvestment.enabled
         ? netFinalEtfValue /
@@ -522,8 +528,14 @@ export function calculatePensionFund(
     const finalPersonalValue = params.personalInvestment.enabled
         ? personalAccumulatedValue
         : 0;
+    // Fix: Calculate net personal value using the same method as yearly calculations (tax only gains)
+    const personalTotalGains = params.personalInvestment.enabled
+        ? Math.max(0, finalPersonalValue - totalPersonalInvestment)
+        : 0;
+    const personalTaxOnGains =
+        personalTotalGains * (params.personalInvestment.taxRate / 100);
     const netFinalPersonalValue = params.personalInvestment.enabled
-        ? finalPersonalValue * (1 - params.personalInvestment.taxRate / 100)
+        ? finalPersonalValue - personalTaxOnGains
         : 0;
     const netRealFinalPersonalValue = params.personalInvestment.enabled
         ? netFinalPersonalValue /

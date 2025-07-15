@@ -7,16 +7,16 @@ import { CalculationResult } from "@/types/calculator";
 import { formatCurrency } from "@/utils/calculator";
 
 // Dynamically import all chart components to ensure no SSR issues
-const AccumulationChart = dynamic(
+const CombinedComparisonChart = dynamic(
     () =>
-        import("./charts/AccumulationChart").then((mod) => ({
-            default: mod.AccumulationChart,
+        import("./charts/CombinedComparisonChart").then((mod) => ({
+            default: mod.CombinedComparisonChart,
         })),
     {
         ssr: false,
         loading: () => (
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200">
-                <div className="h-[48rem] flex items-center justify-center">
+                <div className="h-[32rem] flex items-center justify-center">
                     <div className="text-gray-500">Caricamento grafico...</div>
                 </div>
             </div>
@@ -120,11 +120,11 @@ export function Charts({ results }: ChartsProps) {
     }
     return (
         <div className="space-y-8">
-            {/* TFR Comparison Chart - Show first for better comparison */}
+            {/* TFR Comparison Chart - Shows separate Net and Real value charts */}
             <TfrComparisonChart results={results} />
 
-            {/* Growth Over Time Chart */}
-            <AccumulationChart results={results} />
+            {/* Combined Comparison Chart - Shows all 8 lines in one chart */}
+            <CombinedComparisonChart results={results} />
 
             {/* Contributions Breakdown Chart */}
             <ContributionsChart results={results} />

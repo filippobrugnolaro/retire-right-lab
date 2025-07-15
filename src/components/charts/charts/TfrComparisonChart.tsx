@@ -84,12 +84,28 @@ export function TfrComparisonChart({ results }: TfrComparisonChartProps) {
         (result) => result.tfrNetRealValue
     );
 
-    // Data for ETF net values (if enabled)
+    // Check for ETF and personal investment data
     const hasEtfData = results.totalEtfInvestment > 0;
+    const hasPersonalData = results.totalPersonalInvestment > 0;
 
     // Combined data (Pension Fund + ETF)
     const combinedNetData = results.yearlyResults.map(
         (result) => result.netAccumulatedValue + result.etfNetAccumulatedValue
+    );
+
+    // Combined TFR + Personal Investment data
+    const tfrPlusPersonalNetData = results.yearlyResults.map(
+        (result) => result.tfrNetValue + result.personalNetAccumulatedValue
+    );
+
+    // Combined TFR + Personal Investment real values
+    const tfrPlusPersonalRealData = results.yearlyResults.map(
+        (result) => result.tfrNetRealValue + result.personalNetRealValue
+    );
+
+    // Combined Pension Fund + ETF real values
+    const combinedRealData = results.yearlyResults.map(
+        (result) => result.netRealValue + result.etfNetRealValue
     );
 
     const data = {
@@ -114,8 +130,22 @@ export function TfrComparisonChart({ results }: TfrComparisonChartProps) {
                 pointRadius: 4,
                 pointHoverRadius: 6,
                 tension: 0.2,
-                borderDash: [5, 5],
+                // Solid line for Netto values
             },
+            ...(hasPersonalData
+                ? [
+                      {
+                          label: "TFR + Investimento Contributi Personali (Netto)",
+                          data: tfrPlusPersonalNetData,
+                          borderColor: CHART_COLORS.primary.blue,
+                          backgroundColor: CHART_COLORS.background.blue,
+                          borderWidth: 3,
+                          pointRadius: 4,
+                          pointHoverRadius: 6,
+                          tension: 0.2,
+                      },
+                  ]
+                : []),
             ...(hasEtfData
                 ? [
                       {
@@ -155,8 +185,35 @@ export function TfrComparisonChart({ results }: TfrComparisonChartProps) {
                 pointRadius: 4,
                 pointHoverRadius: 6,
                 tension: 0.2,
-                borderDash: [5, 5],
             },
+            ...(hasPersonalData
+                ? [
+                      {
+                          label: "TFR + Investimento Contributi Personali (Reale)",
+                          data: tfrPlusPersonalRealData,
+                          borderColor: "rgb(99, 102, 241)", // Indigo color
+                          backgroundColor: "rgba(99, 102, 241, 0.1)", // Indigo background
+                          borderWidth: 3,
+                          pointRadius: 4,
+                          pointHoverRadius: 6,
+                          tension: 0.2,
+                      },
+                  ]
+                : []),
+            ...(hasEtfData
+                ? [
+                      {
+                          label: "Fondo + ETF (Reale)",
+                          data: combinedRealData,
+                          borderColor: CHART_COLORS.primary.purple,
+                          backgroundColor: CHART_COLORS.background.purple,
+                          borderWidth: 3,
+                          pointRadius: 4,
+                          pointHoverRadius: 6,
+                          tension: 0.2,
+                      },
+                  ]
+                : []),
         ],
     };
 
@@ -240,9 +297,12 @@ export function TfrComparisonChart({ results }: TfrComparisonChartProps) {
     // Calculate final comparison metrics
     const finalPensionValue = pensionFundNetData[pensionFundNetData.length - 1];
     const finalTfrValue = tfrNetData[tfrNetData.length - 1];
-    const finalCombinedValue = combinedNetData[combinedNetData.length - 1];
-    const advantage = finalPensionValue - finalTfrValue;
-    const advantagePercentage = (finalPensionValue / finalTfrValue - 1) * 100;
+    const finalCombinedValue = hasEtfData
+        ? combinedNetData[combinedNetData.length - 1]
+        : 0;
+    const finalTfrPlusPersonalValue = hasPersonalData
+        ? tfrPlusPersonalNetData[tfrPlusPersonalNetData.length - 1]
+        : 0;
 
     return (
         <div className="space-y-6">
@@ -268,73 +328,63 @@ export function TfrComparisonChart({ results }: TfrComparisonChartProps) {
                     <h4 className="font-bold text-gray-800 mb-3 text-center">
                         📊 Riepilogo Confronto Finale
                     </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="text-center">
-                            <p className="text-sm text-gray-600 mb-1">
-                                Fondo Pensione
-                            </p>
-                            <p className="text-lg font-bold text-green-600">
-                                {formatCurrency(finalPensionValue)}
-                            </p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-sm text-gray-600 mb-1">
-                                TFR Azienda
-                            </p>
-                            <p className="text-lg font-bold text-orange-600">
-                                {formatCurrency(finalTfrValue)}
-                            </p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-sm text-gray-600 mb-1">
-                                Vantaggio €
-                            </p>
-                            <p
-                                className={`text-lg font-bold ${
-                                    advantage >= 0
-                                        ? "text-green-600"
-                                        : "text-red-600"
-                                }`}
-                            >
-                                {advantage >= 0 ? "+" : ""}
-                                {formatCurrency(advantage)}
-                            </p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-sm text-gray-600 mb-1">
-                                Vantaggio %
-                            </p>
-                            <p
-                                className={`text-lg font-bold ${
-                                    advantage >= 0
-                                        ? "text-green-600"
-                                        : "text-red-600"
-                                }`}
-                            >
-                                {advantage >= 0 ? "+" : ""}
-                                {advantagePercentage.toFixed(1)}%
-                            </p>
-                        </div>
-                    </div>
-
-                    {results.totalEtfInvestment > 0 && (
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                            <div className="text-center">
-                                <p className="text-sm text-gray-600 mb-1">
-                                    Fondo + ETF Combinato
-                                </p>
-                                <p className="text-xl font-bold text-purple-600">
-                                    {formatCurrency(finalCombinedValue)}
-                                </p>
-                                <p className="text-sm text-purple-600 font-semibold">
-                                    Vantaggio aggiuntivo: +
-                                    {formatCurrency(
-                                        finalCombinedValue - finalPensionValue
-                                    )}
-                                </p>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Left side - Pension Fund data */}
+                        <div className="bg-white/80 rounded-lg p-4 border border-green-200">
+                            <h5 className="font-semibold text-green-700 mb-3 text-center">
+                                🏛️ Fondo Pensione
+                            </h5>
+                            <div className="space-y-2">
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-600 mb-1">
+                                        Valore Finale Netto
+                                    </p>
+                                    <p className="text-xl font-bold text-green-600">
+                                        {formatCurrency(finalPensionValue)}
+                                    </p>
+                                </div>
+                                {hasEtfData && (
+                                    <div className="text-center pt-2 border-t border-gray-200">
+                                        <p className="text-sm text-gray-600 mb-1">
+                                            Fondo + ETF Combinato
+                                        </p>
+                                        <p className="text-lg font-bold text-purple-600">
+                                            {formatCurrency(finalCombinedValue)}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
-                    )}
+
+                        {/* Right side - TFR data */}
+                        <div className="bg-white/80 rounded-lg p-4 border border-orange-200">
+                            <h5 className="font-semibold text-orange-700 mb-3 text-center">
+                                🏢 TFR e Alternative
+                            </h5>
+                            <div className="space-y-2">
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-600 mb-1">
+                                        TFR Azienda
+                                    </p>
+                                    <p className="text-xl font-bold text-orange-600">
+                                        {formatCurrency(finalTfrValue)}
+                                    </p>
+                                </div>
+                                {hasPersonalData && (
+                                    <div className="text-center pt-2 border-t border-gray-200">
+                                        <p className="text-sm text-gray-600 mb-1">
+                                            TFR + Investimento Personale
+                                        </p>
+                                        <p className="text-lg font-bold text-blue-600">
+                                            {formatCurrency(
+                                                finalTfrPlusPersonalValue
+                                            )}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
