@@ -51,13 +51,22 @@ jobs:
               if: github.event_name == 'pull_request'
               run: |
                   branch_name="${{ github.head_ref }}"
+
+                  # Allow "develop" as special exception
+                  if [[ "$branch_name" == "develop" ]]; then
+                    echo "✅ Valid branch name (special exception): '$branch_name'"
+                    exit 0
+                  fi
+
                   if [[ ! "$branch_name" =~ ^(fix|feature|feat|refactor|chore|docs|test)/ ]]; then
                     echo "❌ Invalid branch name: '$branch_name'"
                     echo "Branch names must start with one of: fix/, feature/, feat/, refactor/, chore/, docs/, test/"
+                    echo "Special exception: 'develop' branch is allowed"
                     echo "Examples:"
                     echo "  fix/login-issue"
                     echo "  feature/pension-calculator"
                     echo "  docs/update-readme"
+                    echo "  develop (special branch)"
                     exit 1
                   else
                     echo "✅ Valid branch name: '$branch_name'"
