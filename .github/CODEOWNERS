@@ -1,0 +1,7 @@
+# Global code owners - all files require review from filippobrugnolaro
+* @filippobrugnolaro
+
+# Specific patterns (optional examples):
+# /src/ @filippobrugnolaro
+# *.tsx @filippobrugnolaro
+# *.ts @filippobrugnolaro

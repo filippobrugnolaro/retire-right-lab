@@ -746,14 +746,71 @@ const params = {
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
+We welcome contributions! There are two ways to contribute to this project:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes with proper tests
-4. Commit changes (`git commit -m 'Add amazing feature'`)
-5. Push to branch (`git push origin feature/amazing-feature`)
-6. Open a Pull Request
+### Option 1: Fork the Repository
+
+1. **Fork** this repository to your own GitHub account
+2. **Clone** your fork: `git clone https://github.com/YOUR_USERNAME/retire-right-lab.git`
+3. **Create a feature branch** with proper naming: `git checkout -b feature/amazing-feature`
+4. **Make your changes** with proper tests and documentation
+5. **Commit** with proper message format: `git commit -m 'feat: add amazing feature'`
+6. **Push** to your fork: `git push origin feature/amazing-feature`
+7. **Create a Pull Request** from your fork to the main repository
+
+### Option 2: Direct Branch (For Collaborators)
+
+If you have write access to this repository:
+
+1. **Clone** the repository: `git clone https://github.com/filippobrugnolaro/retire-right-lab.git`
+2. **Create a feature branch** with proper naming: `git checkout -b feature/amazing-feature`
+3. **Make your changes** with proper tests and documentation
+4. **Commit** with proper message format: `git commit -m 'feat: add amazing feature'`
+5. **Push** branch: `git push origin feature/amazing-feature`
+6. **Create a Pull Request** on GitHub
+
+### 📋 Branch Naming Rules
+
+All branches must follow this pattern: `<type>/<name>`
+
+**Valid types:**
+
+-   `fix/` - Bug fixes
+-   `feature/` or `feat/` - New features
+-   `refactor/` - Code refactoring
+-   `chore/` - Maintenance tasks
+-   `docs/` - Documentation changes
+-   `test/` - Adding or updating tests
+
+**Examples:**
+
+-   `fix/calculation-error`
+-   `feature/new-chart-type`
+-   `feat/mobile-responsive`
+-   `docs/update-readme`
+
+### 💬 Commit Message Rules
+
+All commit messages must start with one of these keywords:
+`fix`, `feature`, `feat`, `refactor`, `chore`, `docs`, or `test`
+
+**Format:** `<type>: <description>`
+
+**Examples:**
+
+-   `fix: resolve compound interest calculation`
+-   `feat: add new pension fund chart`
+-   `docs: update contribution guidelines`
+-   `refactor: simplify tax calculation logic`
+
+### 🔒 Branch Protection
+
+-   **Main branch is protected** - only codeowners can push directly
+-   **All contributors must use Pull Requests** with proper branch naming
+-   **Pull Requests require codeowner approval** before merging
+-   **CI/CD checks must pass** (build, lint, tests, validations)
+
+For detailed development guidelines, see [DEVELOPMENT.md](DEVELOPMENT.md)
 
 ### Development Guidelines
 
