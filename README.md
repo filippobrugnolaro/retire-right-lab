@@ -1,6 +1,6 @@
 # 🏦 Retire Right Lab - Italian Pension Fund Calculator
 
-A comprehensive **Next.js** pension fund calculator specifically designed for the Italian market. This tool simulates pension fund investments, TFR (Trattamento di Fine Rapporto), ETF reinvestments, and personal investments with accurate Italian tax calculations.
+A comprehensive **Next.js** pension fund calculator specifically designed for the Italian market. This tool simulates pension fund investments, TFR (Trattamento di Fine Rapporto), ETF reinvestments and personal investments with accurate Italian tax calculations.
 
 ## 📊 What This Calculator Does
 
