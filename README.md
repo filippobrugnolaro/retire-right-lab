@@ -828,7 +828,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## ⚠️ Disclaimer
 
 This calculator is for **educational and informational purposes only**. The calculations are based on current Italian tax regulations and market assumptions. Always consult with qualified financial advisors for professional investment advice. The authors are not responsible for any financial decisions made based on this tool.
-
----
-
-**Made with ❤️ for Italian retirement planning**
