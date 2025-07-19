@@ -1,10 +1,15 @@
 name: CI
 
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+    workflow_dispatch:
+        inputs:
+            target_branch:
+                description: "Target branch to validate against (e.g., main)"
+                required: false
+                default: "main"
+            pr_number:
+                description: "PR number to validate (optional)"
+                required: false
 
 permissions:
     contents: read
@@ -20,15 +25,28 @@ jobs:
 
             - name: Validate commit messages
               run: |
-                  # Get all commit messages in the PR (or single commit for push to main)
-                  if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-                    commits=$(git log --format="%s" ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+                  # Determine which commits to validate
+                  if [[ -n "${{ github.event.inputs.pr_number }}" ]]; then
+                    # Get commits from specified PR
+                    pr_number="${{ github.event.inputs.pr_number }}"
+                    target_branch="${{ github.event.inputs.target_branch || 'main' }}"
+                    echo "Validating commits from PR #${pr_number} against ${target_branch}"
+                    
+                    # Get PR commits using GitHub CLI or git
+                    commits=$(git log --format="%s" origin/${target_branch}..HEAD)
                   else
+                    # Get the last commit message for single commit validation
+                    echo "Validating last commit message"
                     commits=$(git log --format="%s" -1)
                   fi
 
                   # Check each commit message
+                  invalid_count=0
                   echo "$commits" | while read -r commit_msg; do
+                    if [[ -z "$commit_msg" ]]; then
+                      continue
+                    fi
+                    
                     # Allow merge commits (case insensitive)
                     if [[ "$commit_msg" =~ ^[Mm]erge ]]; then
                       echo "✅ Valid merge commit: '$commit_msg'"
@@ -47,17 +65,38 @@ jobs:
                     fi
                   done
 
-            - name: Validate branch naming (for PRs)
-              if: github.event_name == 'pull_request'
+            - name: Validate branch naming
               run: |
-                  branch_name="${{ github.head_ref }}"
-                  if [[ ! "$branch_name" =~ ^(fix|feature|feat|refactor|chore|docs|test)/ ]]; then
+                  # Get the current branch name
+                  branch_name="${{ github.ref_name }}"
+
+                  # Skip validation for main branch
+                  if [[ "$branch_name" == "main" ]]; then
+                    echo "✅ Skipping validation for main branch"
+                    exit 0
+                  fi
+
+                  # Validate branch naming convention
+                  if [[ ! "$branch_name" =~ ^(fix|feature|feat|refactor|chore|docs|test)/[a-zA-Z0-9._-]+$ ]]; then
                     echo "❌ Invalid branch name: '$branch_name'"
-                    echo "Branch names must start with one of: fix/, feature/, feat/, refactor/, chore/, docs/, test/"
+                    echo ""
+                    echo "Branch names must follow the pattern: <type>/<name>"
+                    echo "Valid types: fix, feature, feat, refactor, chore, docs, test"
+                    echo ""
                     echo "Examples:"
                     echo "  fix/login-issue"
                     echo "  feature/pension-calculator"
-                    echo "  docs/update-readme"
+                    echo "  feat/new-chart-component"
+                    echo "  refactor/calculator-utils"
+                    echo "  chore/update-dependencies"
+                    echo "  docs/api-documentation"
+                    echo "  test/add-unit-tests"
+                    echo ""
+                    echo "Invalid examples:"
+                    echo "  ❌ bugfix/something (use 'fix' instead)"
+                    echo "  ❌ enhancement/feature (use 'feature' or 'feat' instead)"
+                    echo "  ❌ fix-login-issue (missing slash)"
+                    echo "  ❌ fix/ (missing name after slash)"
                     exit 1
                   else
                     echo "✅ Valid branch name: '$branch_name'"
