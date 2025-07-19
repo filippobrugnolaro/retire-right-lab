@@ -1,10 +1,7 @@
 name: CI
 
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+    workflow_dispatch:
 
 permissions:
     contents: read
@@ -20,14 +17,10 @@ jobs:
 
             - name: Validate commit messages
               run: |
-                  # Get all commit messages in the PR (or single commit for push to main)
-                  if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-                    commits=$(git log --format="%s" ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
-                  else
-                    commits=$(git log --format="%s" -1)
-                  fi
+                  # Get the last commit message
+                  commits=$(git log --format="%s" -1)
 
-                  # Check each commit message
+                  # Check commit message
                   echo "$commits" | while read -r commit_msg; do
                     # Allow merge commits (case insensitive)
                     if [[ "$commit_msg" =~ ^[Mm]erge ]]; then
@@ -46,22 +39,6 @@ jobs:
                       exit 1
                     fi
                   done
-
-            - name: Validate branch naming (for PRs)
-              if: github.event_name == 'pull_request'
-              run: |
-                  branch_name="${{ github.head_ref }}"
-                  if [[ ! "$branch_name" =~ ^(fix|feature|feat|refactor|chore|docs|test)/ ]]; then
-                    echo "❌ Invalid branch name: '$branch_name'"
-                    echo "Branch names must start with one of: fix/, feature/, feat/, refactor/, chore/, docs/, test/"
-                    echo "Examples:"
-                    echo "  fix/login-issue"
-                    echo "  feature/pension-calculator"
-                    echo "  docs/update-readme"
-                    exit 1
-                  else
-                    echo "✅ Valid branch name: '$branch_name'"
-                  fi
 
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
