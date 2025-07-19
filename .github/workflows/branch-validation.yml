@@ -71,21 +71,25 @@ jobs:
                   # Validate each commit message
                   invalid_count=0
                   echo "$commits" | while read -r commit_msg; do
-                    if [[ ! "$commit_msg" =~ ^(fix|feature|feat|refactor|chore|docs|test)(\(.+\))?: ]]; then
+                    # Allow merge commits (case insensitive)
+                    if [[ "$commit_msg" =~ ^[Mm]erge ]]; then
+                      echo "✅ Valid merge commit: '$commit_msg'"
+                    # Check regular commit message format
+                    elif [[ "$commit_msg" =~ ^(fix|feature|feat|refactor|chore|docs|test)(\(.+\))?: ]]; then
+                      echo "✅ Valid commit message: '$commit_msg'"
+                    else
                       echo "❌ Invalid commit message: '$commit_msg'"
                       invalid_count=$((invalid_count + 1))
-                    else
-                      echo "✅ Valid commit message: '$commit_msg'"
                     fi
                   done
 
                   # If any commits are invalid, show help and exit
-                  if echo "$commits" | grep -qv -E "^(fix|feature|feat|refactor|chore|docs|test)(\(.+\))?: "; then
+                  if echo "$commits" | grep -qv -E "^([Mm]erge |fix|feature|feat|refactor|chore|docs|test)(\(.+\))?: "; then
                     echo ""
                     echo "❌ Some commit messages don't follow the required format!"
                     echo ""
-                    echo "Commit messages must start with one of: fix, feature, feat, refactor, chore, docs, test"
-                    echo "Followed by a colon and space, then the description."
+                    echo "Commit messages must start with one of: fix, feature, feat, refactor, chore, docs, test, merge, Merge"
+                    echo "Followed by a colon and space for regular commits, or branch info for merge commits."
                     echo ""
                     echo "Examples:"
                     echo "  fix: resolve login authentication issue"
@@ -95,6 +99,8 @@ jobs:
                     echo "  chore: update dependencies to latest versions"
                     echo "  docs: add API documentation"
                     echo "  test: add unit tests for calculator"
+                    echo "  Merge branch 'feature/new-feature' into main"
+                    echo "  merge pull request #123 from user/branch"
                     echo ""
                     echo "Optional scope in parentheses is allowed:"
                     echo "  fix(auth): resolve token expiration"

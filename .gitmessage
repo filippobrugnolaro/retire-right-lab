@@ -1,4 +1,5 @@
 # <type>: <description>
+# Merge <branch-info>  (for merge commits)
 #
 # Types:
 #   fix:      Bug fixes
@@ -8,6 +9,7 @@
 #   chore:    Maintenance tasks
 #   docs:     Documentation changes
 #   test:     Adding or updating tests
+#   merge:    Merge commits (case insensitive)
 #
 # Examples:
 #   fix: resolve login authentication issue
@@ -17,6 +19,8 @@
 #   chore: update dependencies
 #   docs: add API documentation
 #   test: add unit tests for calculator
+#   Merge branch 'feature/new-feature' into main
+#   merge pull request #123 from user/branch
 #
 # Optional scope in parentheses:
 #   feat(calculator): add advanced options
