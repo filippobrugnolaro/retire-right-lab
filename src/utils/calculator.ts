@@ -4,21 +4,33 @@ import {
     YearlyResult,
 } from "@/types/calculator";
 
-// Function to calculate monthly compound interest for pension fund
+// Function to calculate monthly compound interest for pension fund with correct TFR timing
+// TFR 12th and 13th month portions are both paid in December (no compounding between them)
 function calculatePensionFundMonthlyCompound(
     currentAccumulated: number,
     yearlyContribution: number,
+    yearlyTfr: number,
     annualRate: number
 ): number {
     const monthlyRate = annualRate / 100 / 12;
     const monthlyContribution = yearlyContribution / 12;
+    const monthlyTfrPortion = yearlyTfr / 13; // Each month's TFR portion
 
     let accumulated = currentAccumulated;
 
-    // Calculate month by month
-    for (let month = 0; month < 12; month++) {
-        accumulated = accumulated * (1 + monthlyRate) + monthlyContribution;
+    // Calculate months 1-11: regular contributions + 11 monthly TFR portions
+    for (let month = 0; month < 11; month++) {
+        accumulated =
+            accumulated * (1 + monthlyRate) +
+            monthlyContribution +
+            monthlyTfrPortion;
     }
+
+    // Month 12: regular contribution + both 12th and 13th month TFR portions (paid together in December)
+    accumulated =
+        accumulated * (1 + monthlyRate) +
+        monthlyContribution +
+        2 * monthlyTfrPortion;
 
     return accumulated;
 }
@@ -313,9 +325,12 @@ export function calculatePensionFund(
         const tfrNetRealValue =
             tfrNetValue / Math.pow(1 + params.inflation / 100, year);
 
-        // Total yearly contributions
-        const totalYearlyContributions =
-            currentInvestment + employerContribution + tfr + memberContribution;
+        // Total yearly contributions (excluding TFR which is handled separately)
+        const yearlyContributionsExcludingTfr =
+            currentInvestment + employerContribution + memberContribution;
+
+        // Total yearly contributions (for display purposes)
+        const totalYearlyContributions = yearlyContributionsExcludingTfr + tfr;
 
         // Calculate tax rate based on years in pension fund
         // 15% for first 15 years, then decreases by 0.3% per year until 9% at 35 years
@@ -328,9 +343,11 @@ export function calculatePensionFund(
         const taxRate = calculateTaxRate(year);
 
         // Calculate gross accumulated value with monthly compounding
+        // TFR: 11 monthly portions (months 1-11) + double portion in December (12th + 13th month)
         accumulatedValue = calculatePensionFundMonthlyCompound(
             accumulatedValue,
-            totalYearlyContributions,
+            yearlyContributionsExcludingTfr,
+            tfr,
             params.pensionFundReturn
         );
 

@@ -932,7 +932,6 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                                 : "bg-white"
                                         }`}
                                     >
-                                        {" "}
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
                                             {result.year}
                                         </td>
@@ -1020,7 +1019,6 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                                 : "bg-white"
                                         }`}
                                     >
-                                        {" "}
                                         <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
                                             {result.year}
                                         </td>
