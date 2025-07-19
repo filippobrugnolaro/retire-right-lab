@@ -55,16 +55,16 @@ jobs:
                     echo "✅ Valid branch name: '$branch_name'"
                   fi
 
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: latest
+
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: "22"
                   cache: "pnpm"
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: latest
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
@@ -75,8 +75,13 @@ jobs:
             - name: Run type checking
               run: pnpm exec tsc --noEmit
 
-            - name: Run tests (if you have any)
-              run: pnpm test --passWithNoTests
+            - name: Run tests
+              run: |
+                  if ls **/*.test.js **/*.spec.js >/dev/null 2>&1; then
+                    pnpm test
+                  else
+                    echo "No test files found. Skipping test step."
+                  fi
 
             - name: Build project
               run: pnpm build
