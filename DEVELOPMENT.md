@@ -41,13 +41,14 @@ All branches (except `main`) must follow this pattern: `<type>/<name>`
 
 ## Commit Message Convention
 
-All commit messages must start with one of the allowed types followed by a colon:
+All commit messages must start with one of the allowed types followed by a colon, or be merge commits:
 
 ### Format:
 
 ```
 <type>: <description>
 <type>(<scope>): <description>  # with optional scope
+Merge <branch-info>             # merge commits (case insensitive)
 ```
 
 ### Examples:
@@ -59,6 +60,8 @@ All commit messages must start with one of the allowed types followed by a colon
 -   `chore: update dependencies to latest versions`
 -   `docs: add API documentation`
 -   `test: add unit tests for calculator`
+-   `Merge branch 'fix/ci-cd' into main`
+-   `merge pull request #123 from user/feature-branch`
 
 ### Setting up commit message template (optional):
 

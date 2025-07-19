@@ -792,9 +792,9 @@ All branches must follow this pattern: `<type>/<name>`
 ### 💬 Commit Message Rules
 
 All commit messages must start with one of these keywords:
-`fix`, `feature`, `feat`, `refactor`, `chore`, `docs`, or `test`
+`fix`, `feature`, `feat`, `refactor`, `chore`, `docs`, `test`, or `merge`/`Merge`
 
-**Format:** `<type>: <description>`
+**Format:** `<type>: <description>` or `Merge <branch-info>`
 
 **Examples:**
 
@@ -802,6 +802,8 @@ All commit messages must start with one of these keywords:
 -   `feat: add new pension fund chart`
 -   `docs: update contribution guidelines`
 -   `refactor: simplify tax calculation logic`
+-   `Merge branch 'feature/new-calculator' into main`
+-   `merge pull request #123 from user/fix-bug`
 
 ### 🔒 Branch Protection
 

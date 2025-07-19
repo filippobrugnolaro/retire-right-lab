@@ -26,16 +26,21 @@ jobs:
 
                   # Check each commit message
                   echo "$commits" | while read -r commit_msg; do
-                    if [[ ! "$commit_msg" =~ ^(fix|feature|feat|refactor|chore|docs|test)(\(.+\))?: ]]; then
+                    # Allow merge commits (case insensitive)
+                    if [[ "$commit_msg" =~ ^[Mm]erge ]]; then
+                      echo "✅ Valid merge commit: '$commit_msg'"
+                    # Check regular commit message format
+                    elif [[ "$commit_msg" =~ ^(fix|feature|feat|refactor|chore|docs|test)(\(.+\))?: ]]; then
+                      echo "✅ Valid commit message: '$commit_msg'"
+                    else
                       echo "❌ Invalid commit message: '$commit_msg'"
-                      echo "Commit messages must start with one of: fix, feature, feat, refactor, chore, docs, test"
+                      echo "Commit messages must start with one of: fix, feature, feat, refactor, chore, docs, test, merge, Merge"
                       echo "Examples:"
                       echo "  fix: resolve login issue"
                       echo "  feat(calculator): add new pension calculation"
                       echo "  docs: update README"
+                      echo "  Merge branch 'feature/new-feature' into main"
                       exit 1
-                    else
-                      echo "✅ Valid commit message: '$commit_msg'"
                     fi
                   done
 
