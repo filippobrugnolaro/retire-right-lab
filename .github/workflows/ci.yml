@@ -8,8 +8,6 @@ on:
 
 permissions:
     contents: read
-    pages: write
-    id-token: write
 
 jobs:
     test:
@@ -95,18 +93,3 @@ jobs:
 
             - name: Build project
               run: pnpm build
-
-            - name: Setup Pages
-              uses: actions/configure-pages@v5
-              if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-            - name: Upload artifact
-              uses: actions/upload-pages-artifact@v3
-              if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-              with:
-                  path: "./out"
-
-            - name: Deploy to GitHub Pages
-              id: deployment
-              uses: actions/deploy-pages@v4
-              if: github.ref == 'refs/heads/main' && github.event_name == 'push'
