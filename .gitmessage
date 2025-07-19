@@ -1,0 +1,23 @@
+# <type>: <description>
+#
+# Types:
+#   fix:      Bug fixes
+#   feature:  New features
+#   feat:     New features (short form)
+#   refactor: Code refactoring
+#   chore:    Maintenance tasks
+#   docs:     Documentation changes
+#   test:     Adding or updating tests
+#
+# Examples:
+#   fix: resolve login authentication issue
+#   feature: add pension calculator component
+#   feat(ui): implement responsive design
+#   refactor: simplify calculation logic
+#   chore: update dependencies
+#   docs: add API documentation
+#   test: add unit tests for calculator
+#
+# Optional scope in parentheses:
+#   feat(calculator): add advanced options
+#   fix(auth): resolve token expiration

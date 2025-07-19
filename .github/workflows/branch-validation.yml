@@ -1,0 +1,103 @@
+name: Branch and Commit Validation
+
+on:
+    push:
+        branches-ignore:
+            - main
+    pull_request:
+
+jobs:
+    validate:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Validate branch naming
+              run: |
+                  # Get the branch name
+                  if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+                    branch_name="${{ github.head_ref }}"
+                  else
+                    branch_name="${{ github.ref_name }}"
+                  fi
+
+                  # Skip validation for main branch
+                  if [[ "$branch_name" == "main" ]]; then
+                    echo "✅ Skipping validation for main branch"
+                    exit 0
+                  fi
+
+                  # Validate branch naming convention
+                  if [[ ! "$branch_name" =~ ^(fix|feature|feat|refactor|chore|docs|test)/[a-zA-Z0-9._-]+$ ]]; then
+                    echo "❌ Invalid branch name: '$branch_name'"
+                    echo ""
+                    echo "Branch names must follow the pattern: <type>/<name>"
+                    echo "Valid types: fix, feature, feat, refactor, chore, docs, test"
+                    echo ""
+                    echo "Examples:"
+                    echo "  fix/login-issue"
+                    echo "  feature/pension-calculator"
+                    echo "  feat/new-chart-component"
+                    echo "  refactor/calculator-utils"
+                    echo "  chore/update-dependencies"
+                    echo "  docs/api-documentation"
+                    echo "  test/add-unit-tests"
+                    echo ""
+                    echo "Invalid examples:"
+                    echo "  ❌ bugfix/something (use 'fix' instead)"
+                    echo "  ❌ enhancement/feature (use 'feature' or 'feat' instead)"
+                    echo "  ❌ fix-login-issue (missing slash)"
+                    echo "  ❌ fix/ (missing name after slash)"
+                    exit 1
+                  else
+                    echo "✅ Valid branch name: '$branch_name'"
+                  fi
+
+            - name: Validate commit messages
+              run: |
+                  # Get commit range
+                  if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+                    base_sha="${{ github.event.pull_request.base.sha }}"
+                    head_sha="${{ github.event.pull_request.head.sha }}"
+                    commits=$(git log --format="%s" ${base_sha}..${head_sha})
+                  else
+                    # For pushes, check the last commit
+                    commits=$(git log --format="%s" -1)
+                  fi
+
+                  # Validate each commit message
+                  invalid_count=0
+                  echo "$commits" | while read -r commit_msg; do
+                    if [[ ! "$commit_msg" =~ ^(fix|feature|feat|refactor|chore|docs|test)(\(.+\))?: ]]; then
+                      echo "❌ Invalid commit message: '$commit_msg'"
+                      invalid_count=$((invalid_count + 1))
+                    else
+                      echo "✅ Valid commit message: '$commit_msg'"
+                    fi
+                  done
+
+                  # If any commits are invalid, show help and exit
+                  if echo "$commits" | grep -qv -E "^(fix|feature|feat|refactor|chore|docs|test)(\(.+\))?: "; then
+                    echo ""
+                    echo "❌ Some commit messages don't follow the required format!"
+                    echo ""
+                    echo "Commit messages must start with one of: fix, feature, feat, refactor, chore, docs, test"
+                    echo "Followed by a colon and space, then the description."
+                    echo ""
+                    echo "Examples:"
+                    echo "  fix: resolve login authentication issue"
+                    echo "  feature: add pension calculator component"
+                    echo "  feat(ui): implement responsive design"
+                    echo "  refactor: simplify calculation logic"
+                    echo "  chore: update dependencies to latest versions"
+                    echo "  docs: add API documentation"
+                    echo "  test: add unit tests for calculator"
+                    echo ""
+                    echo "Optional scope in parentheses is allowed:"
+                    echo "  fix(auth): resolve token expiration"
+                    echo "  feat(calculator): add advanced options"
+                    exit 1
+                  fi
