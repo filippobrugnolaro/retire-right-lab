@@ -147,6 +147,7 @@ export default function PensionCalculator() {
                             isCalculating={isCalculating}
                             onDownloadCSV={handleDownloadCSV}
                             showTableOnly={true}
+                            params={params}
                         />
                     </div>
                 </div>
@@ -177,6 +178,7 @@ export default function PensionCalculator() {
                             isCalculating={isCalculating}
                             onDownloadCSV={handleDownloadCSV}
                             showCardsOnly={true}
+                            params={params}
                         />
                     </div>
                 </div>

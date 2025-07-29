@@ -288,8 +288,13 @@ export function calculatePensionFund(
             const previousYearInvestment = yearlyResults[year - 2].investment;
             const previousYearMemberContribution =
                 yearlyResults[year - 2].memberContribution;
+            const previousYearEmployerContribution =
+                yearlyResults[year - 2].employerContribution;
+            // Now total contribution includes employer, member, and investment
             const previousYearTotalContribution =
-                previousYearInvestment + previousYearMemberContribution;
+                previousYearInvestment +
+                previousYearMemberContribution +
+                previousYearEmployerContribution;
             // Apply the same maximum limit to previous year amounts
             const previousYearEligibleAmount = Math.min(
                 previousYearTotalContribution,
