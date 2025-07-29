@@ -5,12 +5,15 @@ import { CalculationResult, YearlyResult } from "@/types/calculator";
 import { formatCurrency, formatPercentage } from "@/utils/calculator";
 import { Charts } from "../charts";
 
+import { CalculatorParams } from "@/types/calculator";
+
 interface ResultsDisplayProps {
     results: CalculationResult;
     isCalculating: boolean;
     onDownloadCSV: () => void;
     showCardsOnly?: boolean;
     showTableOnly?: boolean;
+    params?: CalculatorParams;
 }
 
 export function ResultsDisplay({
@@ -19,6 +22,7 @@ export function ResultsDisplay({
     onDownloadCSV,
     showCardsOnly = false,
     showTableOnly = false,
+    params,
 }: ResultsDisplayProps) {
     if (isCalculating) {
         return (
@@ -36,7 +40,9 @@ export function ResultsDisplay({
 
     // Show only table
     if (showTableOnly) {
-        return <YearlyResultsTable calculationResult={results} />;
+        return (
+            <YearlyResultsTable calculationResult={results} params={params} />
+        );
     }
 
     // Show only cards (or default behavior)
@@ -583,7 +589,10 @@ export function ResultsDisplay({
                     </div>
 
                     {/* Enhanced Yearly Results Table */}
-                    <YearlyResultsTable calculationResult={results} />
+                    <YearlyResultsTable
+                        calculationResult={results}
+                        params={params}
+                    />
                 </>
             )}
         </div>
@@ -741,9 +750,13 @@ function SummaryCard({
 // Yearly Results Table Component
 interface YearlyResultsTableProps {
     calculationResult: CalculationResult;
+    params?: CalculatorParams;
 }
 
-function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
+function YearlyResultsTable({
+    calculationResult,
+    params,
+}: YearlyResultsTableProps) {
     const results = calculationResult.yearlyResults;
     // Calculate totals for the first table
     const totals = results.reduce(
@@ -846,7 +859,8 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                     </td>
                                     <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-sm font-bold text-cyan-700 border-r border-gray-100 text-center">
                                         {formatCurrency(
-                                            result.memberContribution +
+                                            result.employerContribution +
+                                                result.memberContribution +
                                                 result.investment
                                         )}
                                     </td>
@@ -1103,6 +1117,9 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                                     Anno
                                                 </th>
                                                 <th className="px-2 sm:px-4 py-4 text-center text-xs sm:text-sm font-bold text-white uppercase tracking-wider border-r border-emerald-400">
+                                                    Detrazione Totale
+                                                </th>
+                                                <th className="px-2 sm:px-4 py-4 text-center text-xs sm:text-sm font-bold text-white uppercase tracking-wider border-r border-emerald-400">
                                                     ETF Lordo
                                                 </th>
                                                 <th className="px-2 sm:px-4 py-4 text-center text-xs sm:text-sm font-bold text-white uppercase tracking-wider border-r border-emerald-400">
@@ -1129,6 +1146,11 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                                     <td className="px-1 sm:px-2 py-3 whitespace-nowrap text-xs sm:text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
                                                         {result.year}
                                                     </td>
+                                                    <td className="px-1 sm:px-2 py-3 whitespace-nowrap text-xs sm:text-sm font-bold text-green-700 border-r border-gray-100 text-center">
+                                                        {formatCurrency(
+                                                            result.totalFiscalRelaxation
+                                                        )}
+                                                    </td>
                                                     <td className="px-1 sm:px-2 py-3 whitespace-nowrap text-xs sm:text-sm font-bold text-gray-800 border-r border-gray-100 text-center">
                                                         {formatCurrency(
                                                             result.etfAccumulatedValue
@@ -1145,16 +1167,15 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                                         )}
                                                     </td>
                                                     <td className="px-1 sm:px-2 py-3 whitespace-nowrap text-xs sm:text-sm font-bold text-red-600 text-center">
-                                                        {result.etfInvestment >
-                                                            0 &&
-                                                        calculationResult.finalEtfValue >
-                                                            0
-                                                            ? `${(
-                                                                  (1 -
-                                                                      calculationResult.netFinalEtfValue /
-                                                                          calculationResult.finalEtfValue) *
-                                                                  100
-                                                              ).toFixed(1)}%`
+                                                        {params &&
+                                                        params.etfReinvestment &&
+                                                        typeof params
+                                                            .etfReinvestment
+                                                            .taxRate ===
+                                                            "number"
+                                                            ? `${params.etfReinvestment.taxRate.toFixed(
+                                                                  1
+                                                              )}%`
                                                             : "-"}
                                                     </td>
                                                 </tr>
@@ -1162,6 +1183,17 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                             <tr className="bg-gradient-to-r from-emerald-100 to-teal-100 font-bold border-t-2 border-emerald-400">
                                                 <td className="px-1 sm:px-2 py-3 whitespace-nowrap text-xs sm:text-sm font-bold text-gray-900 border-r border-gray-100 text-center">
                                                     FINALE
+                                                </td>
+                                                <td className="px-1 sm:px-2 py-3 whitespace-nowrap text-xs sm:text-sm font-bold text-green-700 border-r border-gray-100 text-center">
+                                                    {formatCurrency(
+                                                        results.reduce(
+                                                            (sum, r) =>
+                                                                sum +
+                                                                (r.totalFiscalRelaxation ||
+                                                                    0),
+                                                            0
+                                                        )
+                                                    )}
                                                 </td>
                                                 <td className="px-1 sm:px-2 py-3 whitespace-nowrap text-xs sm:text-sm font-bold text-gray-800 border-r border-gray-100 text-center">
                                                     {formatCurrency(
@@ -1237,7 +1269,8 @@ function YearlyResultsTable({ calculationResult }: YearlyResultsTableProps) {
                                                     </td>
                                                     <td className="px-1 sm:px-2 py-3 whitespace-nowrap text-xs sm:text-sm font-bold text-gray-800 border-r border-gray-100 text-center">
                                                         {formatCurrency(
-                                                            result.memberContribution +
+                                                            result.employerContribution +
+                                                                result.memberContribution +
                                                                 result.investment
                                                         )}
                                                     </td>
